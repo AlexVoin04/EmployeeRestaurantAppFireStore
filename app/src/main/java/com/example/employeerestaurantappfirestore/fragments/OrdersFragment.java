@@ -1,8 +1,7 @@
 package com.example.employeerestaurantappfirestore.fragments;
 
-import androidx.lifecycle.ViewModelProvider;
-
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -15,7 +14,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
@@ -37,6 +40,10 @@ public class OrdersFragment extends Fragment {
     private RecyclerView rv_orders;
     private Button btn_added_order;
     private List<ModelOrder> ordersList;
+    private RelativeLayout rl_orders_not_found;
+    private Spinner spin_filter_orders;
+    private Context context;
+    private Integer filterNumber;
 
     public static OrdersFragment newInstance() {
         return new OrdersFragment();
@@ -51,118 +58,16 @@ public class OrdersFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_orders, container, false);
         initViews();
+        initAdapterForSpinner();
+        initListeners();
         getTheLatestOrdersForToday();
         return view;
     }
 
-    private void setupSnapshotListener() {
-        CollectionReference ordersCollectionRef = FirebaseFirestore.getInstance().collection("Orders");
-
-        ordersCollectionRef.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.e("Firestore", "Error getting documents: ", error);
-                return;
-            }
-
-            ordersList.clear();
-
-            if (value != null) {
-                for (QueryDocumentSnapshot document : value) {
-                    ModelOrder modelOrder = document.toObject(ModelOrder.class);
-                    modelOrder.setOrderId(document.getId());
-                    ordersList.add(modelOrder);
-                }
-                initAdapter();
-
-                for (ModelOrder order : ordersList) {
-                    Log.d("TAG", order.getOrderId() + " => " + order.getCost());
-                }
-            }
-        });
-    }
-
-    private void setupSnapshotListener2() {
-        CollectionReference ordersCollectionRef = FirebaseFirestore.getInstance().collection("Orders");
-
-        ordersCollectionRef.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.e("Firestore", "Error getting documents: ", error);
-                return;
-            }
-
-            ordersList.clear();
-
-            if (value != null) {
-                for (QueryDocumentSnapshot document : value) {
-                    ModelOrder modelOrder = document.toObject(ModelOrder.class);
-                    modelOrder.setOrderId(document.getId());
-
-                    for (ModelOrder.OrderDishes orderDishes : modelOrder.getDishes()) {
-                        if (isToday(orderDishes.getDateTime())) {
-                            ordersList.add(modelOrder);
-                            break;
-                        }
-                    }
-
-                }
-                initAdapter();
-
-                for (ModelOrder order : ordersList) {
-                    Log.d("TAG", order.getOrderId() + " => " + order.getCost());
-                }
-            }
-        });
-    }
-
-    private void setupSnapshotListener3() {
-        CollectionReference ordersCollectionRef = FirebaseFirestore.getInstance().collection("Orders");
-        Map<String, ModelOrder> latestOrdersMap = new HashMap<>();
-        ordersCollectionRef.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.e("Firestore", "Error getting documents: ", error);
-                return;
-            }
-
-            ordersList.clear();
-
-            if (value != null) {
-                for (QueryDocumentSnapshot document : value) {
-                    ModelOrder modelOrder = document.toObject(ModelOrder.class);
-                    modelOrder.setOrderId(document.getId());
-
-                    for (ModelOrder.OrderDishes orderDishes : modelOrder.getDishes()) {
-                        if (isToday(orderDishes.getDateTime())) {
-                            String idTable = modelOrder.getIdTable().getId();
-                            if (latestOrdersMap.containsKey(idTable)) {
-                                ModelOrder existingOrder = latestOrdersMap.get(idTable);
-
-                                // Проверка, является ли текущая запись более поздней
-                                assert existingOrder != null;
-                                Date existingOrderDate = existingOrder.getDishes().get(0).getDateTime();
-                                if (existingOrderDate == null || orderDishes.getDateTime().after(existingOrderDate)) {
-                                    latestOrdersMap.put(idTable, modelOrder);
-                                }
-                            } else {
-                                // Если IdTable еще нет в мапе, добавляем текущую запись
-                                latestOrdersMap.put(idTable, modelOrder);
-                            }
-                        }
-                    }
-
-                }
-                ordersList.addAll(latestOrdersMap.values());
-                initAdapter();
-
-                for (ModelOrder order : ordersList) {
-                    for (ModelOrder.OrderDishes dish : order.getDishes()) {
-                        Log.d("TAG", "OrderID: " + order.getOrderId() + ", Dish DateTime: " + dish.getDateTime());
-                    }
-                }
-            }
-        });
-    }
 
     private void getTheLatestOrdersForToday() {
+        rl_orders_not_found.setVisibility(View.GONE);
+        rv_orders.setVisibility(View.VISIBLE);
         CollectionReference ordersCollectionRef = FirebaseFirestore.getInstance().collection("Orders");
         Map<String, ModelOrder> latestOrdersMap = new HashMap<>();
         ordersCollectionRef.addSnapshotListener((value, error) -> {
@@ -177,6 +82,14 @@ public class OrdersFragment extends Fragment {
                     modelOrder.setOrderId(document.getId());
                     modelOrder.getDishes().sort(Comparator.comparing(ModelOrder.OrderDishes::getDateTime).reversed());
                     modelOrder.setDateTimeMax(modelOrder.getDishes().get(0).getDateTime());
+                    boolean completed = true;
+                    for (ModelOrder.OrderDishes orderDish : modelOrder.getDishes()) {
+                        if (!"3".equals(orderDish.getIdDishStatus().getId())) {
+                            completed = false;
+                            break;
+                        }
+                    }
+                    modelOrder.setCompleted(completed);
                     if(isToday(modelOrder.getDateTimeMax())){
                         String idTable = modelOrder.getIdTable().getId();
                         if (latestOrdersMap.containsKey(idTable)) {
@@ -196,11 +109,29 @@ public class OrdersFragment extends Fragment {
                     }
 
                 }
-                List<ModelOrder> newOrdersList = new ArrayList<>(latestOrdersMap.values());
-
-                // Очищаем ordersList и добавляем все элементы из нового списка
                 ordersList.clear();
+                List<ModelOrder> newOrdersList = new ArrayList<>(latestOrdersMap.values());
                 ordersList.addAll(newOrdersList);
+                if(ordersList.size()==0){
+                    ordersNotFound();
+                    return;
+                }
+                if(filterNumber==1){
+                    ordersList.clear();
+                    for(ModelOrder order: newOrdersList){
+                        if(order.getCompleted()){
+                            ordersList.add(order);
+                        }
+                    }
+                }
+                else if(filterNumber==2){
+                    ordersList.clear();
+                    for(ModelOrder order: newOrdersList){
+                        if(!order.getCompleted()){
+                            ordersList.add(order);
+                        }
+                    }
+                }
                 initAdapter();
 
                 for (ModelOrder order : ordersList) {
@@ -220,26 +151,14 @@ public class OrdersFragment extends Fragment {
                 && today.get(Calendar.DAY_OF_MONTH) == otherDate.get(Calendar.DAY_OF_MONTH);
     }
 
-    private void testModel(){
-        CollectionReference ordersCollectionRef = FirebaseFirestore.getInstance().collection("Orders");
-        ordersCollectionRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    ModelOrder modelOrder = document.toObject(ModelOrder.class);
-                    modelOrder.setOrderId(document.getId());
-                    ordersList.add(modelOrder);
-                }
-                initAdapter();
-                for (ModelOrder order: ordersList){
-                    Log.d("TAG", order.getOrderId() + " => " + order.getCost());
-                }
-
-            } else {
-                Log.e("Firestore", "Error getting documents: ", task.getException());
-            }
-        });
+    private void ordersNotFound(){
+        Log.d("Firestore", "dishes.size()==0");
+        Log.d("Firestore", "ordersList.size()==0");
+        rl_orders_not_found.setVisibility(View.VISIBLE);
+        rv_orders.setVisibility(View.GONE);
     }
+
+
 
     @SuppressLint("NotifyDataSetChanged")
     private void initAdapter(){
@@ -248,11 +167,40 @@ public class OrdersFragment extends Fragment {
         rv_orders.setAdapter(orderAdapter);
     }
     private void initViews(){
+        filterNumber = 0;
         ordersList = new ArrayList<>();
+        context = getContext();
         rv_orders = view.findViewById(R.id.rv_orders);
         rv_orders.setLayoutManager(new GridLayoutManager(OrdersFragment.newInstance().getContext(), 1));
         rv_orders.setHasFixedSize(true);
         btn_added_order = view.findViewById(R.id.btn_added_order);
+        rl_orders_not_found = view.findViewById(R.id.rl_orders_not_found);
+        spin_filter_orders = view.findViewById(R.id.spin_filter_orders);
+    }
+
+    private void initListeners(){
+        spin_filter_orders.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                filterNumber = pos;
+                getTheLatestOrdersForToday();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+    }
+
+    private void initAdapterForSpinner(){
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                context,
+                R.array.orders_filter_array,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spin_filter_orders.setAdapter(adapter);
     }
 
 }

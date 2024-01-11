@@ -9,6 +9,7 @@ import java.util.List;
 public class ModelOrder {
     private String orderId;
     private Date DateTimeMax;
+    private boolean isCompleted;
     private double Cost;
     private DocumentReference IdTable;
     private List<OrderDishes> Dishes;
@@ -98,6 +99,14 @@ public class ModelOrder {
 
     public void setDateTimeMax(Date dateTimeMax) {
         DateTimeMax = dateTimeMax;
+    }
+
+    public boolean getCompleted() {
+        return isCompleted;
+    }
+
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
     }
 
     public double getCost() {

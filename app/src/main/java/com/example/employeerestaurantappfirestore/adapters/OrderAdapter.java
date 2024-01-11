@@ -51,16 +51,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
 //               viewHolder.tv_table.setText(documentSnapshot.getString("number"));
 //           }
 //        });
-        boolean allDishesHaveCorrectStatus = true;
-        for (ModelOrder.OrderDishes orderDish : order.getDishes()) {
-            if (!"3".equals(orderDish.getIdDishStatus().getId())) {
-                allDishesHaveCorrectStatus = false;
-                break;
-            }
-        }
         // Если все OrderDishes имеют правильный статус зеленый цвет фона
         Drawable circleBackground;
-        if (allDishesHaveCorrectStatus) {
+        if (order.getCompleted()) {
             circleBackground = ContextCompat.getDrawable(ordersFragment.requireContext(), R.drawable.circle_background_active);
 
         } else {

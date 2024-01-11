@@ -15,7 +15,8 @@
         app:layout_constraintEnd_toStartOf="@+id/linearLayout2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:orientation="horizontal">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_orders"
@@ -23,6 +24,33 @@
             android:layout_height="match_parent"
             android:numColumns="auto_fit"
             android:stretchMode="columnWidth" />
+
+        <RelativeLayout
+            android:id="@+id/rl_orders_not_found"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_centerInParent="true"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:src="@drawable/ic_order_not_found"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="30dp"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:gravity="center"
+                    android:text="Нет заказов"/>
+            </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -57,7 +85,7 @@
                     android:textSize="16sp" />
 
                 <Spinner
-                    android:id="@+id/spin_sort_menu"
+                    android:id="@+id/spin_filter_orders"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_marginStart="5dp"
