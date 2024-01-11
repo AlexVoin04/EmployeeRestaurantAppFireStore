@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ModelOrder {
     private String orderId;
+    private Date DateTimeMax;
     private double Cost;
     private DocumentReference IdTable;
     private List<OrderDishes> Dishes;
@@ -89,6 +90,14 @@ public class ModelOrder {
 
     public void setOrderId(String orderId) {
         this.orderId = orderId;
+    }
+
+    public Date getDateTimeMax() {
+        return DateTimeMax;
+    }
+
+    public void setDateTimeMax(Date dateTimeMax) {
+        DateTimeMax = dateTimeMax;
     }
 
     public double getCost() {

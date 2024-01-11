@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             loadDefaultFragment(); // Метод для загрузки фрагмента
         }
-        testModel();
     }
 
     private void testModel(){
