@@ -72,9 +72,9 @@
             android:padding="10dp">
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="end"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
                 android:orientation="horizontal">
 
                 <TextView
@@ -94,16 +94,20 @@
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tv_tables_select"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Выбрать столы"
-                    android:textColor="@drawable/text_color_selector"
-                    android:textSize="16sp" />
+                    android:background="@android:drawable/editbox_background"
+                    android:drawableRight="@android:drawable/arrow_down_float"
+                    android:hint="Выбрать столы"
+                    android:drawablePadding="16dp"
+                    android:textSize="16sp"
+                    android:padding="10dp"/>
             </LinearLayout>
         </LinearLayout>
 

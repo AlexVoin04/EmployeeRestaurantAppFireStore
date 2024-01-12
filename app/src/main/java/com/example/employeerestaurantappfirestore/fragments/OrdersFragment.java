@@ -1,7 +1,9 @@
 package com.example.employeerestaurantappfirestore.fragments;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,16 +21,21 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,6 +51,11 @@ public class OrdersFragment extends Fragment {
     private Spinner spin_filter_orders;
     private Context context;
     private Integer filterNumber;
+    private TextView tv_tables_select;
+    private FirebaseFirestore fireStore;
+    private String[] langArray;
+    private boolean[] selectedLanguage;
+    private ArrayList<Integer> langList;
 
     public static OrdersFragment newInstance() {
         return new OrdersFragment();
@@ -59,6 +71,7 @@ public class OrdersFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_orders, container, false);
         initViews();
         initAdapterForSpinner();
+        getTables();
         initListeners();
         getTheLatestOrdersForToday();
         return view;
@@ -68,14 +81,15 @@ public class OrdersFragment extends Fragment {
     private void getTheLatestOrdersForToday() {
         rl_orders_not_found.setVisibility(View.GONE);
         rv_orders.setVisibility(View.VISIBLE);
-        CollectionReference ordersCollectionRef = FirebaseFirestore.getInstance().collection("Orders");
+        CollectionReference ordersCollectionRef = fireStore.collection("Orders");
         Map<String, ModelOrder> latestOrdersMap = new HashMap<>();
         ordersCollectionRef.addSnapshotListener((value, error) -> {
             if (error != null) {
                 Log.e("Firestore", "Error getting documents: ", error);
                 return;
             }
-
+            ordersList.clear();
+            latestOrdersMap.clear();
             if (value != null) {
                 for (QueryDocumentSnapshot document : value) {
                     ModelOrder modelOrder = document.toObject(ModelOrder.class);
@@ -109,36 +123,76 @@ public class OrdersFragment extends Fragment {
                     }
 
                 }
-                ordersList.clear();
                 List<ModelOrder> newOrdersList = new ArrayList<>(latestOrdersMap.values());
                 ordersList.addAll(newOrdersList);
+                filterReadyOrder(newOrdersList);
+//                if(filterNumber==1){
+//                    ordersList.clear();
+//                    for(ModelOrder order: newOrdersList){
+//                        if(order.getCompleted()){
+//                            ordersList.add(order);
+//                        }
+//                    }
+//                }
+//                else if(filterNumber==2){
+//                    ordersList.clear();
+//                    for(ModelOrder order: newOrdersList){
+//                        if(!order.getCompleted()){
+//                            ordersList.add(order);
+//                        }
+//                    }
+//                }
                 if(ordersList.size()==0){
                     ordersNotFound();
                     return;
                 }
-                if(filterNumber==1){
-                    ordersList.clear();
-                    for(ModelOrder order: newOrdersList){
-                        if(order.getCompleted()){
-                            ordersList.add(order);
-                        }
-                    }
-                }
-                else if(filterNumber==2){
-                    ordersList.clear();
-                    for(ModelOrder order: newOrdersList){
-                        if(!order.getCompleted()){
-                            ordersList.add(order);
-                        }
-                    }
+                ordersList.sort(Comparator.comparing(ModelOrder::getDateTimeMax));
+                tablesSelect();
+                for (ModelOrder order : ordersList) {
+                    Log.d("TAG", order.getOrderId() + " => " + order.getCost() +" Date: " +order.getDateTimeMax().toString());
                 }
                 initAdapter();
-
-                for (ModelOrder order : ordersList) {
-                    Log.d("TAG", order.getOrderId() + " => " + order.getCost() +"Date: " +order.getDateTimeMax().toString());
-                }
             }
         });
+    }
+
+    private void filterReadyOrder(List<ModelOrder> newOrdersList){
+        if(filterNumber == 1){
+            ordersList.clear();
+            for(ModelOrder order: newOrdersList){
+                if(order.getCompleted()){
+                    ordersList.add(order);
+                }
+            }
+        }
+        else if (filterNumber==2){
+            ordersList.clear();
+            for(ModelOrder order: newOrdersList){
+                if(!order.getCompleted()){
+                    ordersList.add(order);
+                }
+            }
+        }
+    }
+    private void tablesSelect(){
+        if (langList.size()!=0){
+            List<ModelOrder> ordersToRemove = new ArrayList<>();
+            for (ModelOrder order : ordersList) {
+                boolean shouldRemove = true;
+                for (int j = 0; j < langList.size(); j++) {
+                    if (langArray[langList.get(j)].equals(order.getIdTable().getId())) {
+                        shouldRemove = false;
+                        break;
+                    }
+                }
+                if (shouldRemove) {
+                    ordersToRemove.add(order);
+                }
+            }
+
+            // Удаление элементов из ordersList
+            ordersList.removeAll(ordersToRemove);
+        }
     }
 
     // Вспомогательный метод для проверки, является ли дата сегодняшней
@@ -152,13 +206,10 @@ public class OrdersFragment extends Fragment {
     }
 
     private void ordersNotFound(){
-        Log.d("Firestore", "dishes.size()==0");
         Log.d("Firestore", "ordersList.size()==0");
         rl_orders_not_found.setVisibility(View.VISIBLE);
         rv_orders.setVisibility(View.GONE);
     }
-
-
 
     @SuppressLint("NotifyDataSetChanged")
     private void initAdapter(){
@@ -167,6 +218,8 @@ public class OrdersFragment extends Fragment {
         rv_orders.setAdapter(orderAdapter);
     }
     private void initViews(){
+        fireStore = FirebaseFirestore.getInstance();
+        langList = new ArrayList<>();
         filterNumber = 0;
         ordersList = new ArrayList<>();
         context = getContext();
@@ -176,6 +229,7 @@ public class OrdersFragment extends Fragment {
         btn_added_order = view.findViewById(R.id.btn_added_order);
         rl_orders_not_found = view.findViewById(R.id.rl_orders_not_found);
         spin_filter_orders = view.findViewById(R.id.spin_filter_orders);
+        tv_tables_select = view.findViewById(R.id.tv_tables_select);
     }
 
     private void initListeners(){
@@ -189,6 +243,63 @@ public class OrdersFragment extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
+            }
+        });
+        tv_tables_select.setOnClickListener(view -> {
+            initTablesSelectBuilder();
+        });
+    }
+
+    private void initTablesSelectBuilder(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Выберите столы");
+        builder.setCancelable(false);
+        builder.setMultiChoiceItems(langArray, selectedLanguage, (DialogInterface.OnMultiChoiceClickListener) (dialogInterface, i, b) -> {
+            if (b) {
+                langList.add(i);
+                Collections.sort(langList);
+            } else {
+                langList.remove(Integer.valueOf(i));
+            }
+        });
+        builder.setPositiveButton("OK", (dialogInterface, i) -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int j = 0; j < langList.size(); j++) {
+                stringBuilder.append(langArray[langList.get(j)]);
+                if (j != langList.size() - 1) {
+                    stringBuilder.append(", ");
+                }
+            }
+            getTheLatestOrdersForToday();
+            tv_tables_select.setText(stringBuilder.toString());
+        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> {
+            dialogInterface.dismiss();
+        });
+        builder.setNeutralButton("Clear All", (dialogInterface, i) -> {
+            for (int j = 0; j < selectedLanguage.length; j++) {
+                selectedLanguage[j] = false;
+                langList.clear();
+                tv_tables_select.setText("");
+                getTheLatestOrdersForToday();
+            }
+        });
+        builder.show();
+    }
+
+    private void getTables(){
+        CollectionReference collection = fireStore.collection("Tables");
+        collection.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<String> documentIds = new ArrayList<>();
+                documentIds.add("Все столы");
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    documentIds.add(document.getId());
+                }
+                langArray = documentIds.toArray(new String[0]);
+                selectedLanguage = new boolean[langArray.length];
+            } else {
+                Log.d("Firestore", "Error getting documents: ", task.getException());
             }
         });
     }
