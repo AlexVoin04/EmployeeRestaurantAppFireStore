@@ -9,9 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.WindowManager;
 
-import com.example.employeerestaurantappfirestore.MainActivity;
 import com.example.employeerestaurantappfirestore.R;
-import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
