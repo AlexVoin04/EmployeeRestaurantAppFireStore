@@ -57,10 +57,13 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:layout_marginTop="5dp"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
                 android:id="@+id/ll_orders"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:padding="3dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/rounded_button"
                 >
 
                 <ImageView
@@ -70,26 +73,35 @@
             </LinearLayout>
 
             <LinearLayout
-                android:layout_marginTop="5dp"
+                android:layout_margin="5dp"
+                android:padding="3dp"
                 android:id="@+id/ll_tables"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 >
 
                 <ImageView
-                    android:id="@+id/iv_soup"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_table" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_logout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <LinearLayout
+                android:layout_margin="5dp"
+                android:padding="3dp"
+                android:id="@+id/ll_user"
+                android:layout_gravity="center"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/selector_background"
+                >
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_user" />
+            </LinearLayout>
 
         </LinearLayout>
         <LinearLayout

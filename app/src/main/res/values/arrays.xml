@@ -5,4 +5,16 @@
         <item>Завершенные</item>
         <item>Неоконченные</item>
     </string-array>
+    <string-array name="tables_status_filter_array">
+        <item>Все</item>
+        <item>Свободен</item>
+        <item>Занят</item>
+        <item>Бронь</item>
+    </string-array>
+    <string-array name="tables_number_of_seats_filter_array">
+        <item>Все</item>
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+    </string-array>
 </resources>

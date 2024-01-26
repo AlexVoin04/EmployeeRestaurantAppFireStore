@@ -273,10 +273,10 @@ public class OrdersFragment extends Fragment {
             getTheLatestOrdersForToday();
             tv_tables_select.setText(stringBuilder.toString());
         });
-        builder.setNegativeButton("Cancel", (dialogInterface, i) -> {
+        builder.setNegativeButton("Отмена", (dialogInterface, i) -> {
             dialogInterface.dismiss();
         });
-        builder.setNeutralButton("Clear All", (dialogInterface, i) -> {
+        builder.setNeutralButton("Все столы", (dialogInterface, i) -> {
             for (int j = 0; j < selectedLanguage.length; j++) {
                 selectedLanguage[j] = false;
                 langList.clear();
@@ -292,7 +292,7 @@ public class OrdersFragment extends Fragment {
         collection.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> documentIds = new ArrayList<>();
-                documentIds.add("Все столы");
+//                documentIds.add("Все столы");
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     documentIds.add(document.getId());
                 }
