@@ -224,7 +224,7 @@ public class OrdersFragment extends Fragment {
         ordersList = new ArrayList<>();
         context = getContext();
         rv_orders = view.findViewById(R.id.rv_orders);
-        rv_orders.setLayoutManager(new GridLayoutManager(OrdersFragment.newInstance().getContext(), 1));
+        rv_orders.setLayoutManager(new GridLayoutManager(context, 1));
         rv_orders.setHasFixedSize(true);
         btn_added_order = view.findViewById(R.id.btn_added_order);
         rl_orders_not_found = view.findViewById(R.id.rl_orders_not_found);
