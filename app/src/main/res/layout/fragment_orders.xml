@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toStartOf="@+id/linearLayout2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:padding="10dp"
+        android:padding="5dp"
         android:orientation="horizontal">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -61,12 +61,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/linearLayout1"
         app:layout_constraintTop_toTopOf="parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
             android:background="@drawable/rounded_layout_back"
             android:orientation="vertical"
             android:padding="10dp">
@@ -108,7 +108,9 @@
                     android:hint="Все столы"
                     android:drawablePadding="16dp"
                     android:textSize="16sp"
-                    android:padding="10dp"/>
+                    android:padding="10dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/black"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -116,7 +118,7 @@
             android:id="@+id/btn_added_order"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/rounded_button"
             android:text="Новый заказ"
             android:textColor="@color/white"

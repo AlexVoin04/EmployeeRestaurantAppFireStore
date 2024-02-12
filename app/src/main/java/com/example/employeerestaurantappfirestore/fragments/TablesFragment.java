@@ -63,6 +63,7 @@ public class TablesFragment extends Fragment {
         context = getContext();
         fireStore = FirebaseFirestore.getInstance();
         tableLists = new ArrayList<>();
+        filterSeatsNumber = 0;
         spin_filter_status = view.findViewById(R.id.spin_filter_status);
         spin_filter_number_of_seats = view.findViewById(R.id.spin_filter_number_of_seats);
         rl_tables_not_found = view.findViewById(R.id.rl_tables_not_found);
@@ -73,6 +74,7 @@ public class TablesFragment extends Fragment {
 
     @SuppressLint("NotifyDataSetChanged")
     private void getTables(){
+        int scrollY = rv_tables.getScrollY();
         CollectionReference tablesCollectionRef = fireStore.collection("Tables");
         tablesCollectionRef.addSnapshotListener(((value, error) -> {
             if (error != null) {
@@ -86,10 +88,24 @@ public class TablesFragment extends Fragment {
                     modelTableList.setTableId(document.getId());
                     tableLists.add(modelTableList);
                 }
+                if(filterSeatsNumber!=0){
+                    tableLists = filterTablesBySeatsNumber();
+                }
                 initAdapter();
                 tableAdapter.notifyDataSetChanged();
+                rv_tables.scrollToPosition(scrollY);
             }
         }));
+    }
+
+    private List<ModelTableList> filterTablesBySeatsNumber() {
+        List<ModelTableList> filteredList = new ArrayList<>();
+        for (ModelTableList table : tableLists) {
+            if (table.getNumberOfSeats() == filterSeatsNumber) {
+                filteredList.add(table);
+            }
+        }
+        return filteredList;
     }
 
     private void initAdapter() {
@@ -113,8 +129,13 @@ public class TablesFragment extends Fragment {
         spin_filter_number_of_seats.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                filterSeatsNumber = pos;
-//                getTheLatestOrdersForToday();
+                if(pos==0){
+                    filterSeatsNumber = pos;
+                }else{
+                    filterSeatsNumber = Integer.valueOf((String)parent.getItemAtPosition(pos));
+                }
+                Log.d("filterSeatsNumber", String.valueOf(filterSeatsNumber));
+                getTables();
             }
 
             @Override

@@ -40,8 +40,7 @@
                 android:layout_height="wrap_content"
                 android:text="Количество мест:"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/tv_number_of_seats"
@@ -49,8 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textSize="20sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -64,8 +62,7 @@
                 android:text="Статус стола:"
                 android:layout_gravity="center_vertical"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textSize="20sp" />
 
             <RadioGroup
                 android:id="@+id/rg_table_status"

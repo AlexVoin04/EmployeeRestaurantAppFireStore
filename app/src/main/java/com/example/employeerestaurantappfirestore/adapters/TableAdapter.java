@@ -2,12 +2,14 @@ package com.example.employeerestaurantappfirestore.adapters;
 
 import android.annotation.SuppressLint;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -16,9 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
+import java.util.Objects;
 
 public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
     List<ModelTableList> modelTableList;
@@ -38,7 +44,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table, viewGroup, false);
         return new ViewHolder(v);
     }
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n"})
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int position){
         ModelTableList table = modelTableList.get(position);
@@ -73,6 +79,72 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
         }
 
         viewHolder.ll_call_status.setBackground(circleBackground);
+        viewHolder.ll_call_status.setOnClickListener(view -> changCallStatus(table));
+        viewHolder.rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
+            String newIdTableStatus = "1";
+            if (checkedId == R.id.rBtnFree) {
+                newIdTableStatus = "1";
+            } else if (checkedId == R.id.rBtnOccupied) {
+                newIdTableStatus = "2";
+            } else if (checkedId == R.id.rBtnReserved) {
+                newIdTableStatus = "3";
+            }
+            // Обновление значения idTableStatus в объекте table
+            updateTableStatus(table, newIdTableStatus);
+        });
+    }
+
+    private void updateTableStatus(ModelTableList table, String newIdTableStatus) {
+        DocumentReference tableReference = FirebaseFirestore.getInstance()
+                .collection("Tables")
+                .document(table.getTableId());
+
+        DocumentReference tableStatusReference = FirebaseFirestore.getInstance()
+                .collection("TableStatus")
+                .document(newIdTableStatus);
+
+        tableReference.update("idTableStatus", tableStatusReference)
+                .addOnCompleteListener(updateTask -> {
+                    if (updateTask.isSuccessful()) {
+                        Log.d("FireStore", "Статус стола "+table.getTableId()+" обновлен: " + tableStatusReference.getId());
+                    } else {
+                        Exception e = updateTask.getException();
+                        if (e != null) {
+                            Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                        }
+                    }
+                });
+    }
+
+    private void changCallStatus(ModelTableList table){
+        // Изменение значения idTableStatus в зависимости от текущего значения
+        String currentIdCallStatus = table.getIdCallStatus().getId();
+        String newIdCallStatus = "1";
+        if (currentIdCallStatus.equals("1")) {
+            newIdCallStatus = "2";
+        }
+
+        // Получение ссылки на документ Firestore по его id
+        DocumentReference tableReference = FirebaseFirestore.getInstance()
+                .collection("Tables")
+                .document(table.getTableId());
+
+        DocumentReference tableStatusReference = FirebaseFirestore.getInstance()
+                .collection("CallStatus")
+                .document(newIdCallStatus);
+
+        // Обновление значения idTableStatus в Firestore
+        tableReference.update("idCallStatus", tableStatusReference)
+                .addOnCompleteListener(updateTask ->{
+                    if (updateTask.isSuccessful()) {
+                        Log.d("FireStore", "Статус вызова для стола "+table.getTableId()+" обновлен: " + tableStatusReference.getId());
+                    } else {
+                        Exception e = updateTask.getException();
+                        if (e != null) {
+                            Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                        }
+                    }
+                });
     }
     @Override
     public int getItemCount() {
