@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
+import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +35,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -257,7 +259,7 @@ public class OrdersFragment extends Fragment {
         builder.setMultiChoiceItems(langArray, selectedLanguage, (DialogInterface.OnMultiChoiceClickListener) (dialogInterface, i, b) -> {
             if (b) {
                 langList.add(i);
-                Collections.sort(langList);
+//                Collections.sort(langList);
             } else {
                 langList.remove(Integer.valueOf(i));
             }
@@ -297,12 +299,14 @@ public class OrdersFragment extends Fragment {
                     documentIds.add(document.getId());
                 }
                 langArray = documentIds.toArray(new String[0]);
+                TablesDialog.sortTablesDialog(langArray);
                 selectedLanguage = new boolean[langArray.length];
             } else {
                 Log.d("Firestore", "Error getting documents: ", task.getException());
             }
         });
     }
+
 
     private void initAdapterForSpinner(){
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
