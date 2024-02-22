@@ -1,10 +1,10 @@
 package com.example.employeerestaurantappfirestore.fragments;
 
 import androidx.core.widget.NestedScrollView;
-import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,16 +17,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
-import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.adapters.TableAdapter;
-import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -48,6 +49,8 @@ public class TablesFragment extends Fragment {
     private TableAdapter tableAdapter;
     private NestedScrollView nsv_table;
     private TextView tv_tables_select;
+    private LinearLayout ll_settings_btn, ll_settings;
+    private boolean opened;
 
     public static TablesFragment newInstance() {
         return new TablesFragment();
@@ -56,7 +59,13 @@ public class TablesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        view =  inflater.inflate(R.layout.fragment_tables, container, false);
+        Configuration config = getResources().getConfiguration();
+        if (config.smallestScreenWidthDp >= 600) {
+            view =  inflater.inflate(R.layout.fragment_tables, container, false);
+        } else {
+            view =  inflater.inflate(R.layout.fragment_tables_smart, container, false);
+        }
+//        view =  inflater.inflate(R.layout.fragment_tables, container, false);
         initViews();
         initAdapterForSpinners();
         initListeners();
@@ -70,6 +79,8 @@ public class TablesFragment extends Fragment {
         tableLists = new ArrayList<>();
         filterSeatsNumber = 0;
         filterStatusNumber = 0;
+        ll_settings_btn = view.findViewById(R.id.ll_settings_btn);
+        ll_settings = view.findViewById(R.id.ll_settings);
         tv_tables_select = view.findViewById(R.id.tv_tables_select);
         nsv_table = view.findViewById(R.id.nsv_table);
         spin_filter_status = view.findViewById(R.id.spin_filter_status);
@@ -180,6 +191,41 @@ public class TablesFragment extends Fragment {
         });
         tv_tables_select.setOnClickListener(view -> {
             initTablesSelectBuilder();
+        });
+
+        ll_settings_btn.setOnClickListener(view -> {
+            if (!opened) {
+                // Показываем представление
+                ll_settings.setVisibility(View.VISIBLE);
+                TranslateAnimation animate = new TranslateAnimation(-ll_settings.getWidth(), 0, 0, 0);
+                animate.setDuration(500);
+                animate.setFillAfter(true);
+                ll_settings.startAnimation(animate);
+            } else {
+                // Скрываем представление
+                TranslateAnimation animate = new TranslateAnimation(0, -ll_settings.getWidth()-100, 0, 0);
+                animate.setDuration(500);
+                animate.setFillAfter(true);
+                animate.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                        // Начало анимации
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        // Завершение анимации
+                        ll_settings.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                        // Повторение анимации
+                    }
+                });
+                ll_settings.startAnimation(animate);
+            }
+            opened = !opened;
         });
     }
 

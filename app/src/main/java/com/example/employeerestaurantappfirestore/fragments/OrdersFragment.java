@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -70,7 +71,13 @@ public class OrdersFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_orders, container, false);
+        Configuration config = getResources().getConfiguration();
+        if (config.smallestScreenWidthDp >= 600) {
+            view = inflater.inflate(R.layout.fragment_orders, container, false);
+        } else {
+            view = inflater.inflate(R.layout.fragment_orders_smart, container, false);
+        }
+//        view = inflater.inflate(R.layout.fragment_orders, container, false);
         initViews();
         initAdapterForSpinner();
         getTables();

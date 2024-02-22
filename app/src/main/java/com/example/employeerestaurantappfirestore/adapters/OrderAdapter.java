@@ -1,6 +1,7 @@
 package com.example.employeerestaurantappfirestore.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +36,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_order, viewGroup, false);
+        Configuration config = ordersFragment.getResources().getConfiguration();
+        View v;
+        if (config.smallestScreenWidthDp >= 600) {
+            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_order, viewGroup, false);
+        } else {
+            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_order_smart, viewGroup, false);
+        }
+//        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_order, viewGroup, false);
         return new ViewHolder(v);
     }
 

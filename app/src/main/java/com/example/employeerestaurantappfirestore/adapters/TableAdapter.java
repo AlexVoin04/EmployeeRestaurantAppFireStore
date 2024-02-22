@@ -1,6 +1,7 @@
 package com.example.employeerestaurantappfirestore.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,7 +42,14 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table, viewGroup, false);
+        Configuration config = tablesFragment.getResources().getConfiguration();
+        View v;
+        if (config.smallestScreenWidthDp >= 600) {
+            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table, viewGroup, false);
+        } else {
+            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table_smart, viewGroup, false);
+        }
+//        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table, viewGroup, false);
         return new ViewHolder(v);
     }
     @SuppressLint({"SetTextI18n"})
