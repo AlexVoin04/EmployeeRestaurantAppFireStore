@@ -100,10 +100,11 @@
             android:layout_marginEnd="10dp"
             android:background="@drawable/rounded_button"
             android:padding="2dp">
+
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/ic_settings"/>
+                android:src="@drawable/ic_settings" />
         </LinearLayout>
     </LinearLayout>
 

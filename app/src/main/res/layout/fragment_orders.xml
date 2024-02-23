@@ -126,6 +126,23 @@
             android:textSize="20sp"
             android:textAllCaps="false"/>
 
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/ll_settings_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/rounded_button"
+            android:padding="2dp">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_settings" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>
