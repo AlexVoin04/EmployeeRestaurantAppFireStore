@@ -17,9 +17,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -59,6 +62,8 @@ public class OrdersFragment extends Fragment {
     private String[] langArray;
     private boolean[] selectedLanguage;
     private ArrayList<Integer> langList;
+    private LinearLayout ll_settings_btn, ll_settings;
+    private boolean opened;
 
     public static OrdersFragment newInstance() {
         return new OrdersFragment();
@@ -232,6 +237,8 @@ public class OrdersFragment extends Fragment {
         filterNumber = 0;
         ordersList = new ArrayList<>();
         context = getContext();
+        ll_settings_btn = view.findViewById(R.id.ll_settings_btn);
+        ll_settings = view.findViewById(R.id.ll_settings);
         rv_orders = view.findViewById(R.id.rv_orders);
         rv_orders.setLayoutManager(new GridLayoutManager(context, 1));
         rv_orders.setHasFixedSize(true);
@@ -256,6 +263,40 @@ public class OrdersFragment extends Fragment {
         });
         tv_tables_select.setOnClickListener(view -> {
             initTablesSelectBuilder();
+        });
+        ll_settings_btn.setOnClickListener(view -> {
+            if (!opened) {
+                // Показываем представление
+                ll_settings.setVisibility(View.VISIBLE);
+                TranslateAnimation animate = new TranslateAnimation(-ll_settings.getWidth(), 0, 0, 0);
+                animate.setDuration(500);
+                animate.setFillAfter(true);
+                ll_settings.startAnimation(animate);
+            } else {
+                // Скрываем представление
+                TranslateAnimation animate = new TranslateAnimation(0, -ll_settings.getWidth()-100, 0, 0);
+                animate.setDuration(500);
+                animate.setFillAfter(true);
+                animate.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                        // Начало анимации
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        // Завершение анимации
+                        ll_settings.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                        // Повторение анимации
+                    }
+                });
+                ll_settings.startAnimation(animate);
+            }
+            opened = !opened;
         });
     }
 

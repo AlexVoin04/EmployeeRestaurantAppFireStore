@@ -62,11 +62,13 @@ public class TablesFragment extends Fragment {
         Configuration config = getResources().getConfiguration();
         if (config.smallestScreenWidthDp >= 600) {
             view =  inflater.inflate(R.layout.fragment_tables, container, false);
+            initViews();
         } else {
             view =  inflater.inflate(R.layout.fragment_tables_smart, container, false);
+            initViews();
+//            smartScroll();
         }
 //        view =  inflater.inflate(R.layout.fragment_tables, container, false);
-        initViews();
         initAdapterForSpinners();
         initListeners();
         getTables();
@@ -250,4 +252,47 @@ public class TablesFragment extends Fragment {
         spin_filter_number_of_seats.setAdapter(adapterSeats);
     }
 
+//    private OnScrollListener mScrollListener;
+//
+//    // Метод для установки обратного вызова
+//    public void setOnScrollListener(OnScrollListener listener) {
+//        mScrollListener = listener;
+//    }
+//    private void smartScroll(){
+//        Log.d("scroll", "test");
+//        rv_tables.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            private int previousDy = 0;
+//            @Override
+//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//                Log.d("scroll", "test2");
+//                if (dy > 0 && previousDy <= 0) {
+//                    Log.d("down", "down2");
+//                    previousDy = dy;
+//                } else if (dy < 0 && previousDy >= 0) {
+//                    Log.d("scroll", "up");
+//                    previousDy = dy;
+//                }
+//                if (dy > 0) {
+//                    // Прокрутка вниз
+//                    Log.d("scroll", "up");
+//                    if (mScrollListener != null) {
+//                        mScrollListener.onScrollDown();
+//                        Log.d("scroll", "up2");
+//                    }
+//                } else if (dy < 0) {
+//                    // Прокрутка вверх
+//                    if (mScrollListener != null) {
+//                        Log.d("down", "down2");
+//                        mScrollListener.onScrollUp();
+//                    }
+//                }
+//
+//            }
+//        });
+//    }
+//    public interface OnScrollListener {
+//        void onScrollDown();
+//        void onScrollUp();
+//    }
 }

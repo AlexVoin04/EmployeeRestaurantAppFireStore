@@ -13,6 +13,8 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -24,7 +26,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    private LinearLayout ll_orders, ll_tables, ll_user;
+    private LinearLayout ll_orders, ll_tables, ll_user, ll_menu;
     private TextView tv_title;
 
     @SuppressLint("MissingInflatedId")
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         ll_tables = findViewById(R.id.ll_tables);
         ll_user = findViewById(R.id.ll_user);
         tv_title = findViewById(R.id.tv_title);
+        ll_menu = findViewById(R.id.ll_menu);
     }
 
     private void initListeners(){
@@ -103,5 +106,40 @@ public class MainActivity extends AppCompatActivity {
         // Сброс цвета и текста для всех элементов меню
         ll_orders.setBackgroundColor(ContextCompat.getColor(this, R.color.back));
         ll_tables.setBackgroundColor(ContextCompat.getColor(this, R.color.back));
-        }
+    }
+
+    private void hideMenu(){
+        ll_menu.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(0, 0, ll_menu.getHeight(), 0);
+
+        // duration of animation
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        ll_menu.startAnimation(animate);
+    }
+
+    private void showMenu(){
+        TranslateAnimation animate = new TranslateAnimation(0, 0, 0, ll_menu.getHeight());
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                // Начало анимации
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                // Завершение анимации
+                ll_menu.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                // Повторение анимации
+            }
+        });
+        ll_menu.startAnimation(animate);
+    }
+
 }
