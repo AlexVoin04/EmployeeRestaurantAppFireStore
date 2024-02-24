@@ -1,6 +1,7 @@
 package com.example.employeerestaurantappfirestore.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -21,13 +22,15 @@ import android.widget.TextView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
+import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnScrollListener{
     private FirebaseAuth mAuth;
     private LinearLayout ll_orders, ll_tables, ll_user, ll_menu;
     private TextView tv_title;
+    private ConstraintLayout cl_menu;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.activity_main);
         } else {
             setContentView(R.layout.activity_main_smart);
+            cl_menu = findViewById(R.id.cl_menu);
         }
 //        setContentView(R.layout.activity_main);
         initViews();
@@ -108,38 +112,52 @@ public class MainActivity extends AppCompatActivity {
         ll_tables.setBackgroundColor(ContextCompat.getColor(this, R.color.back));
     }
 
-    private void hideMenu(){
-        ll_menu.setVisibility(View.VISIBLE);
-        TranslateAnimation animate = new TranslateAnimation(0, 0, ll_menu.getHeight(), 0);
+    private void showMenu(){
+        if(cl_menu.getVisibility() != View.VISIBLE){
+            cl_menu.setVisibility(View.VISIBLE);
+            TranslateAnimation animate = new TranslateAnimation(0, 0, cl_menu.getHeight(), 0);
 
-        // duration of animation
-        animate.setDuration(500);
-        animate.setFillAfter(true);
-        ll_menu.startAnimation(animate);
+            // duration of animation
+            animate.setDuration(500);
+            animate.setFillAfter(true);
+            cl_menu.startAnimation(animate);
+        }
     }
 
-    private void showMenu(){
-        TranslateAnimation animate = new TranslateAnimation(0, 0, 0, ll_menu.getHeight());
-        animate.setDuration(500);
-        animate.setFillAfter(true);
-        animate.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                // Начало анимации
-            }
+    private void hideMenu(){
+        if(cl_menu.getVisibility() != View.GONE){
+            TranslateAnimation animate = new TranslateAnimation(0, 0, 0, cl_menu.getHeight()+100);
+            animate.setDuration(500);
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                // Завершение анимации
-                ll_menu.setVisibility(View.GONE);
-            }
+            animate.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    // Начало анимации
+                }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-                // Повторение анимации
-            }
-        });
-        ll_menu.startAnimation(animate);
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    // Завершение анимации
+                    cl_menu.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // Повторение анимации
+                }
+            });
+            cl_menu.startAnimation(animate);
+        }
+    }
+
+    @Override
+    public void onScrollDown() {
+        hideMenu();
+    }
+
+    @Override
+    public void onScrollUp() {
+        showMenu();
     }
 
 }

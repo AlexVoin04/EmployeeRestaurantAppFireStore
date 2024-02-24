@@ -13,6 +13,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.employeerestaurantappfirestore.activities.MainActivity;
+import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +40,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TablesFragment extends Fragment {
+public class TablesFragment extends Fragment{
     private Spinner spin_filter_status, spin_filter_number_of_seats;
     private RecyclerView rv_tables;
     private FirebaseFirestore fireStore;
@@ -66,7 +69,7 @@ public class TablesFragment extends Fragment {
         } else {
             view =  inflater.inflate(R.layout.fragment_tables_smart, container, false);
             initViews();
-//            smartScroll();
+            smartScroll();
         }
 //        view =  inflater.inflate(R.layout.fragment_tables, container, false);
         initAdapterForSpinners();
@@ -252,47 +255,35 @@ public class TablesFragment extends Fragment {
         spin_filter_number_of_seats.setAdapter(adapterSeats);
     }
 
-//    private OnScrollListener mScrollListener;
-//
-//    // Метод для установки обратного вызова
-//    public void setOnScrollListener(OnScrollListener listener) {
-//        mScrollListener = listener;
-//    }
-//    private void smartScroll(){
-//        Log.d("scroll", "test");
-//        rv_tables.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            private int previousDy = 0;
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                Log.d("scroll", "test2");
-//                if (dy > 0 && previousDy <= 0) {
-//                    Log.d("down", "down2");
-//                    previousDy = dy;
-//                } else if (dy < 0 && previousDy >= 0) {
-//                    Log.d("scroll", "up");
-//                    previousDy = dy;
-//                }
-//                if (dy > 0) {
-//                    // Прокрутка вниз
-//                    Log.d("scroll", "up");
-//                    if (mScrollListener != null) {
-//                        mScrollListener.onScrollDown();
-//                        Log.d("scroll", "up2");
-//                    }
-//                } else if (dy < 0) {
-//                    // Прокрутка вверх
-//                    if (mScrollListener != null) {
-//                        Log.d("down", "down2");
-//                        mScrollListener.onScrollUp();
-//                    }
-//                }
-//
-//            }
-//        });
-//    }
-//    public interface OnScrollListener {
-//        void onScrollDown();
-//        void onScrollUp();
-//    }
+    private OnScrollListener onScrollListener;
+    private void smartScroll() {
+        if (context instanceof MainActivity) {
+            onScrollListener = (OnScrollListener) context;
+        }
+        nsv_table.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (scrollY > oldScrollY) {
+                    // Скроллинг вниз
+                    Log.d("ScrollDirection", "Scrolling Down");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollDown();
+                    }
+                } else if (scrollY < oldScrollY) {
+                    // Скроллинг вверх
+                    Log.d("ScrollDirection", "Scrolling Up");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollUp();
+                    }
+                } else if(scrollY==0) {
+                    Log.d("ScrollDirection", "Scrolling Up");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollUp();
+                    }
+                }
+            }
+        });
+    }
+
+
 }
