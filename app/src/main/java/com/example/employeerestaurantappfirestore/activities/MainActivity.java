@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
 
     // Метод, вызываемый при доступности сети
     private void onNetworkAvailable() {
-        Snackbar.make(findViewById(android.R.id.content), "Соединение восстановлено", Snackbar.LENGTH_SHORT).show();
+
     }
     // Метод, вызываемый при потере сети
     private void onNetworkLost() {
