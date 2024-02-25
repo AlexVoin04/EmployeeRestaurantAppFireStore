@@ -24,6 +24,9 @@ import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
+import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
+import com.example.employeerestaurantappfirestore.utils.WakeLockManager;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -48,12 +51,13 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         }
         initViews();
         initListeners();
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        assert user != null;
-        Log.d("FirebaseUser", user.getEmail() + " => " + user.getUid());
+        getUser();
+        startNetwork();
+        WakeLockManager.acquire(this);
+        activityStart(savedInstanceState);
+    }
 
-
+    private void activityStart(Bundle savedInstanceState){
         if (savedInstanceState == null) {
             updateMenuUI(ll_orders, "Заказы");
             loadDefaultFragment(new OrdersFragment()); // Метод для загрузки фрагмента
@@ -67,7 +71,16 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
 
         }
     }
-
+    private void getUser(){
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        assert user != null;
+        Log.d("FirebaseUser", user.getEmail() + " => " + user.getUid());
+    }
+    private void startNetwork(){
+        NetworkUtils.setupNetworkMonitoring(this, this::onNetworkAvailable, this::onNetworkLost);
+        NetworkUtils.checkNetworkAndShowSnackbar(this);
+    }
     private void initSmartConfig(){
         cl_menu = findViewById(R.id.cl_menu);
         View v_menu_shadow = findViewById(R.id.v_menu_shadow);
@@ -108,14 +121,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
                     .setNegativeButton("Нет", (dialog, which) -> alertDialog.dismiss())
                     .show();
         });
-//        iv_menu_selector.setOnClickListener(view -> {
-//            if((Integer) iv_menu_selector.getTag() == R.drawable.ic_menu_hide){
-//                showMenu();
-//            }
-//            else if((Integer) iv_menu_selector.getTag() == R.drawable.ic_menu_show){
-//                hideMenu();
-//            }
-//        });
     }
 
     private void logOut(){
@@ -183,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
             cl_menu.startAnimation(animate);
         }
     }
-
     @Override
     public void onScrollDown() {
         hideMenu();
@@ -194,4 +198,17 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         showMenu();
     }
 
+    // Метод, вызываемый при доступности сети
+    private void onNetworkAvailable() {
+        Snackbar.make(findViewById(android.R.id.content), "Соединение восстановлено", Snackbar.LENGTH_SHORT).show();
+    }
+    // Метод, вызываемый при потере сети
+    private void onNetworkLost() {
+        Snackbar.make(findViewById(android.R.id.content), "Отсутствует соединение сети", Snackbar.LENGTH_SHORT).show();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WakeLockManager.release();
+    }
 }

@@ -144,6 +144,7 @@ public class OrdersFragment extends Fragment {
 
                 ordersList.sort(Comparator.comparing(ModelOrder::getDateTimeMax));
                 tablesSelect();
+                initAdapter();
                 if(ordersList.size()==0){
                     ordersNotFound();
                     return;
@@ -151,7 +152,6 @@ public class OrdersFragment extends Fragment {
                 for (ModelOrder order : ordersList) {
                     Log.d("TAG", order.getOrderId() + " => " + order.getCost() +" Date: " +order.getDateTimeMax().toString());
                 }
-                initAdapter();
                 rv_orders.scrollToPosition(scrollY);
             }
         });
