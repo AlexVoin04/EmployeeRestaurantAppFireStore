@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_button"
+    android:padding="15dp"
+    android:layout_margin="5dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="Стол:"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_marginStart="5dp"
+                android:id="@+id/tv_table"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="1"
+                android:textStyle="bold"
+                android:textSize="20sp"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Количество мест:"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_number_of_seats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Статус стола:"
+                android:layout_gravity="center_vertical"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <RadioGroup
+                android:id="@+id/rg_table_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rBtnFree"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/radio_selecter"
+                    android:button="@android:color/transparent"
+                    android:checked="true"
+                    android:text="Свободен"
+                    android:textColor="@drawable/radio_text_color" />
+
+                <RadioButton
+                    android:id="@+id/rBtnOccupied"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:button="@android:color/transparent"
+                    android:background="@drawable/radio_selecter"
+                    android:textColor="@drawable/radio_text_color"
+                    android:text="Занят"/>
+
+                <RadioButton
+                    android:id="@+id/rBtnReserved"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:button="@android:color/transparent"
+                    android:background="@drawable/radio_selecter"
+                    android:textColor="@drawable/radio_text_color"
+                    android:text="Бронь"/>
+            </RadioGroup>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_call_status"
+        android:layout_marginStart="20dp"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/circle_background"
+        android:padding="5dp">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:src="@drawable/ic_call"/>
+    </LinearLayout>
+
+</LinearLayout>
