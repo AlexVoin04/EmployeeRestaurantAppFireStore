@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,20 +29,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
+import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,11 +57,12 @@ public class OrdersFragment extends Fragment {
     private Integer filterNumber;
     private TextView tv_tables_select;
     private FirebaseFirestore fireStore;
-    private String[] langArray;
-    private boolean[] selectedLanguage;
-    private ArrayList<Integer> langList;
+    private String[] tableArrayForFilter;
+    private boolean[] selectedTableForFilter;
+    private ArrayList<Integer> tableListForFilter;
     private LinearLayout ll_settings_btn, ll_settings;
     private boolean opened;
+    private NestedScrollView nsv_order;
 
     public static OrdersFragment newInstance() {
         return new OrdersFragment();
@@ -79,13 +78,14 @@ public class OrdersFragment extends Fragment {
         Configuration config = getResources().getConfiguration();
         if (config.smallestScreenWidthDp >= 600) {
             view = inflater.inflate(R.layout.fragment_orders, container, false);
+            initViews();
         } else {
             view = inflater.inflate(R.layout.fragment_orders_smart, container, false);
+            initViews();
+            smartScroll();
         }
-//        view = inflater.inflate(R.layout.fragment_orders, container, false);
-        initViews();
         initAdapterForSpinner();
-        getTables();
+        getTablesForFilter();
         initListeners();
         getTheLatestOrdersForToday();
         return view;
@@ -93,6 +93,7 @@ public class OrdersFragment extends Fragment {
 
 
     private void getTheLatestOrdersForToday() {
+        int scrollY = rv_orders.getScrollY();
         rl_orders_not_found.setVisibility(View.GONE);
         rv_orders.setVisibility(View.VISIBLE);
         CollectionReference ordersCollectionRef = fireStore.collection("Orders");
@@ -140,22 +141,7 @@ public class OrdersFragment extends Fragment {
                 List<ModelOrder> newOrdersList = new ArrayList<>(latestOrdersMap.values());
                 ordersList.addAll(newOrdersList);
                 filterReadyOrder(newOrdersList);
-//                if(filterNumber==1){
-//                    ordersList.clear();
-//                    for(ModelOrder order: newOrdersList){
-//                        if(order.getCompleted()){
-//                            ordersList.add(order);
-//                        }
-//                    }
-//                }
-//                else if(filterNumber==2){
-//                    ordersList.clear();
-//                    for(ModelOrder order: newOrdersList){
-//                        if(!order.getCompleted()){
-//                            ordersList.add(order);
-//                        }
-//                    }
-//                }
+
                 ordersList.sort(Comparator.comparing(ModelOrder::getDateTimeMax));
                 tablesSelect();
                 if(ordersList.size()==0){
@@ -166,6 +152,7 @@ public class OrdersFragment extends Fragment {
                     Log.d("TAG", order.getOrderId() + " => " + order.getCost() +" Date: " +order.getDateTimeMax().toString());
                 }
                 initAdapter();
+                rv_orders.scrollToPosition(scrollY);
             }
         });
     }
@@ -189,12 +176,12 @@ public class OrdersFragment extends Fragment {
         }
     }
     private void tablesSelect(){
-        if (langList.size()!=0){
+        if (tableListForFilter.size()!=0){
             List<ModelOrder> ordersToRemove = new ArrayList<>();
             for (ModelOrder order : ordersList) {
                 boolean shouldRemove = true;
-                for (int j = 0; j < langList.size(); j++) {
-                    if (langArray[langList.get(j)].equals(order.getIdTable().getId())) {
+                for (int j = 0; j < tableListForFilter.size(); j++) {
+                    if (tableArrayForFilter[tableListForFilter.get(j)].equals(order.getIdTable().getId())) {
                         shouldRemove = false;
                         break;
                     }
@@ -233,10 +220,11 @@ public class OrdersFragment extends Fragment {
     }
     private void initViews(){
         fireStore = FirebaseFirestore.getInstance();
-        langList = new ArrayList<>();
+        tableListForFilter = new ArrayList<>();
         filterNumber = 0;
         ordersList = new ArrayList<>();
         context = getContext();
+        nsv_order = view.findViewById(R.id.nsv_order);
         ll_settings_btn = view.findViewById(R.id.ll_settings_btn);
         ll_settings = view.findViewById(R.id.ll_settings);
         rv_orders = view.findViewById(R.id.rv_orders);
@@ -262,7 +250,7 @@ public class OrdersFragment extends Fragment {
             }
         });
         tv_tables_select.setOnClickListener(view -> {
-            initTablesSelectBuilder();
+            TablesDialog.initTablesSelectBuilder(context, tableArrayForFilter, selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTheLatestOrdersForToday);
         });
         ll_settings_btn.setOnClickListener(view -> {
             if (!opened) {
@@ -300,62 +288,6 @@ public class OrdersFragment extends Fragment {
         });
     }
 
-    private void initTablesSelectBuilder(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Выберите столы");
-        builder.setCancelable(false);
-        builder.setMultiChoiceItems(langArray, selectedLanguage, (DialogInterface.OnMultiChoiceClickListener) (dialogInterface, i, b) -> {
-            if (b) {
-                langList.add(i);
-//                Collections.sort(langList);
-            } else {
-                langList.remove(Integer.valueOf(i));
-            }
-        });
-        builder.setPositiveButton("OK", (dialogInterface, i) -> {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int j = 0; j < langList.size(); j++) {
-                stringBuilder.append(langArray[langList.get(j)]);
-                if (j != langList.size() - 1) {
-                    stringBuilder.append(", ");
-                }
-            }
-            getTheLatestOrdersForToday();
-            tv_tables_select.setText(stringBuilder.toString());
-        });
-        builder.setNegativeButton("Отмена", (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
-        builder.setNeutralButton("Все столы", (dialogInterface, i) -> {
-            for (int j = 0; j < selectedLanguage.length; j++) {
-                selectedLanguage[j] = false;
-                langList.clear();
-                tv_tables_select.setText("");
-                getTheLatestOrdersForToday();
-            }
-        });
-        builder.show();
-    }
-
-    private void getTables(){
-        CollectionReference collection = fireStore.collection("Tables");
-        collection.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                ArrayList<String> documentIds = new ArrayList<>();
-//                documentIds.add("Все столы");
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    documentIds.add(document.getId());
-                }
-                langArray = documentIds.toArray(new String[0]);
-                TablesDialog.sortTablesDialog(langArray);
-                selectedLanguage = new boolean[langArray.length];
-            } else {
-                Log.d("Firestore", "Error getting documents: ", task.getException());
-            }
-        });
-    }
-
-
     private void initAdapterForSpinner(){
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 context,
@@ -366,4 +298,48 @@ public class OrdersFragment extends Fragment {
         spin_filter_orders.setAdapter(adapter);
     }
 
+    private OnScrollListener onScrollListener;
+    private void smartScroll() {
+        if (context instanceof MainActivity) {
+            onScrollListener = (OnScrollListener) context;
+        }
+        nsv_order.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (scrollY > oldScrollY) {
+                    // Скроллинг вниз
+                    Log.d("ScrollDirection", "Scrolling Down");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollDown();
+                    }
+                } else if (scrollY < oldScrollY) {
+                    // Скроллинг вверх
+                    Log.d("ScrollDirection", "Scrolling Up");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollUp();
+                    }
+                } else if(scrollY==0) {
+                    Log.d("ScrollDirection", "Scrolling Up");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollUp();
+                    }
+                }
+            }
+        });
+    }
+
+    private void getTablesForFilter(){
+        TablesDialog.getTables(fireStore, new TablesDialog.OnTablesLoadedListener() {
+            @Override
+            public void onTablesLoaded(String[] tables) {
+                tableArrayForFilter = tables;
+                selectedTableForFilter = new boolean[tableArrayForFilter.length];
+            }
+
+            @Override
+            public void onTablesLoadFailed(Exception e) {
+                // Обработка ошибки при загрузке таблиц
+            }
+        });
+    }
 }

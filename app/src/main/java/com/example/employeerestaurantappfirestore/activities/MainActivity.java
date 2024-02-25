@@ -4,18 +4,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,13 +27,15 @@ import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+
 public class MainActivity extends AppCompatActivity implements OnScrollListener{
     private FirebaseAuth mAuth;
-    private LinearLayout ll_orders, ll_tables, ll_user, ll_menu;
+    private LinearLayout ll_orders, ll_tables, ll_user;
     private TextView tv_title;
     private ConstraintLayout cl_menu;
+    private ImageView iv_menu_selector;
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "UseCompatLoadingForDrawables"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,9 +44,8 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
             setContentView(R.layout.activity_main);
         } else {
             setContentView(R.layout.activity_main_smart);
-            cl_menu = findViewById(R.id.cl_menu);
+            initSmartConfig();
         }
-//        setContentView(R.layout.activity_main);
         initViews();
         initListeners();
         mAuth = FirebaseAuth.getInstance();
@@ -52,18 +54,37 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         Log.d("FirebaseUser", user.getEmail() + " => " + user.getUid());
 
 
-        updateMenuUI(ll_orders, "Заказы");
         if (savedInstanceState == null) {
+            updateMenuUI(ll_orders, "Заказы");
             loadDefaultFragment(new OrdersFragment()); // Метод для загрузки фрагмента
+        }
+        else {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fcv_fragment);
+            if (currentFragment instanceof TablesFragment) {
+                updateMenuUI(ll_tables, "Столы");
+                loadDefaultFragment(currentFragment);
+            }
+
         }
     }
 
+    private void initSmartConfig(){
+        cl_menu = findViewById(R.id.cl_menu);
+        View v_menu_shadow = findViewById(R.id.v_menu_shadow);
+        Drawable drawable;
+        if (isDarkTheme()) {
+            drawable = ContextCompat.getDrawable(MainActivity.this, R.drawable.shadow_menu);
+        } else {
+            drawable = ContextCompat.getDrawable(MainActivity.this, R.drawable.shadow_menu_light);
+        }
+        v_menu_shadow.setBackground(drawable);
+    }
     private void initViews(){
         ll_orders = findViewById(R.id.ll_orders);
         ll_tables = findViewById(R.id.ll_tables);
         ll_user = findViewById(R.id.ll_user);
         tv_title = findViewById(R.id.tv_title);
-        ll_menu = findViewById(R.id.ll_menu);
+        iv_menu_selector = findViewById(R.id.iv_menu_selector);
     }
 
     private void initListeners(){
@@ -87,6 +108,14 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
                     .setNegativeButton("Нет", (dialog, which) -> alertDialog.dismiss())
                     .show();
         });
+//        iv_menu_selector.setOnClickListener(view -> {
+//            if((Integer) iv_menu_selector.getTag() == R.drawable.ic_menu_hide){
+//                showMenu();
+//            }
+//            else if((Integer) iv_menu_selector.getTag() == R.drawable.ic_menu_show){
+//                hideMenu();
+//            }
+//        });
     }
 
     private void logOut(){
@@ -94,8 +123,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         startActivities(new Intent[]{new Intent(MainActivity.this, InputActivity.class)});
     }
     private void loadDefaultFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fcv_fragment, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.commit();
@@ -112,15 +140,20 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         ll_tables.setBackgroundColor(ContextCompat.getColor(this, R.color.back));
     }
 
+    public boolean isDarkTheme() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+    }
+
     private void showMenu(){
         if(cl_menu.getVisibility() != View.VISIBLE){
             cl_menu.setVisibility(View.VISIBLE);
             TranslateAnimation animate = new TranslateAnimation(0, 0, cl_menu.getHeight(), 0);
-
             // duration of animation
             animate.setDuration(500);
             animate.setFillAfter(true);
             cl_menu.startAnimation(animate);
+            iv_menu_selector.setImageResource(R.drawable.ic_menu_show);
         }
     }
 
@@ -139,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
                 public void onAnimationEnd(Animation animation) {
                     // Завершение анимации
                     cl_menu.setVisibility(View.GONE);
+                    iv_menu_selector.setImageResource(R.drawable.ic_menu_hide);
                 }
 
                 @Override

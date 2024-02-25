@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.model.ModelTablesData;
 import com.google.firebase.firestore.CollectionReference;
@@ -19,7 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TablesDialog {
     public static void initTablesSelectBuilder(Context context, String[] tableArray,
                                                boolean[] selectedTables, ArrayList<Integer> tableList,
-                                               DialogInterface.OnClickListener positiveClickListener) {
+                                               TextView tv_tables_select,
+                                               Runnable onSelectionCompleted) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Выберите столы");
         builder.setCancelable(false);
@@ -31,7 +33,19 @@ public class TablesDialog {
                 tableList.remove(Integer.valueOf(i));
             }
         });
-        builder.setPositiveButton("OK", positiveClickListener);
+        builder.setPositiveButton("OK", (dialogInterface, i) -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int j = 0; j < tableList.size(); j++) {
+                stringBuilder.append(tableArray[tableList.get(j)]);
+                if (j != tableList.size() - 1) {
+                    stringBuilder.append(", ");
+                }
+            }
+            tv_tables_select.setText(stringBuilder.toString());
+            if (onSelectionCompleted != null) {
+                onSelectionCompleted.run();
+            }
+        });
         builder.setNegativeButton("Отмена", (dialogInterface, i) -> {
             dialogInterface.dismiss();
         });
@@ -39,30 +53,37 @@ public class TablesDialog {
             for (int j = 0; j < selectedTables.length; j++) {
                 selectedTables[j] = false;
                 tableList.clear();
+                tv_tables_select.setText("");
+                if (onSelectionCompleted != null) {
+                    onSelectionCompleted.run();
+                }
             }
         });
         builder.show();
     }
 
-//    public static ModelTablesData getTables(FirebaseFirestore fireStore){
-//        CollectionReference collection = fireStore.collection("Tables");
-//        AtomicReference<ModelTablesData> tablesData = new AtomicReference<>(new ModelTablesData(new String[0], new boolean[0]));
-//        collection.get().addOnCompleteListener(task -> {
-//            if (task.isSuccessful()) {
-//                ArrayList<String> documentIds = new ArrayList<>();
-////                documentIds.add("Все столы");
-//                for (QueryDocumentSnapshot document : task.getResult()) {
-//                    documentIds.add(document.getId());
-//                }
-//                String[] langArray = documentIds.toArray(new String[0]);
-//                boolean[] selectedLanguage = new boolean[langArray.length];
-//                tablesData.set(new ModelTablesData(langArray, selectedLanguage));
-//            } else {
-//                Log.d("Firestore", "Error getting documents: ", task.getException());
-//            }
-//        });
-//        return tablesData.get();
-//    }
+    public static void getTables(FirebaseFirestore fireStore, OnTablesLoadedListener listener) {
+        CollectionReference collection = fireStore.collection("Tables");
+        collection.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<String> documentIds = new ArrayList<>();
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    documentIds.add(document.getId());
+                }
+                String[] tablesArray = documentIds.toArray(new String[0]);
+                sortTablesDialog(tablesArray);
+                listener.onTablesLoaded(tablesArray);
+            } else {
+                Log.d("Firestore", "Error getting documents: ", task.getException());
+                listener.onTablesLoadFailed(task.getException());
+            }
+        });
+    }
+
+    public interface OnTablesLoadedListener {
+        void onTablesLoaded(String[] tables);
+        void onTablesLoadFailed(Exception e);
+    }
 
     public static String[] sortTablesDialog(String[] tableArray){
         Comparator<String> numericStringComparator = Comparator.comparingInt(Integer::parseInt);

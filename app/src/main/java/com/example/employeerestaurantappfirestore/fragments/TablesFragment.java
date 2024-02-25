@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.activities.MainActivity;
+import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 
 import android.util.Log;
@@ -54,6 +55,9 @@ public class TablesFragment extends Fragment{
     private TextView tv_tables_select;
     private LinearLayout ll_settings_btn, ll_settings;
     private boolean opened;
+    private String[] tableArrayForFilter;
+    private boolean[] selectedTableForFilter;
+    private ArrayList<Integer> tableListForFilter;
 
     public static TablesFragment newInstance() {
         return new TablesFragment();
@@ -71,8 +75,8 @@ public class TablesFragment extends Fragment{
             initViews();
             smartScroll();
         }
-//        view =  inflater.inflate(R.layout.fragment_tables, container, false);
         initAdapterForSpinners();
+        getTablesForFilter();
         initListeners();
         getTables();
         return view;
@@ -81,6 +85,7 @@ public class TablesFragment extends Fragment{
     private void initViews(){
         context = getContext();
         fireStore = FirebaseFirestore.getInstance();
+        tableListForFilter = new ArrayList<>();
         tableLists = new ArrayList<>();
         filterSeatsNumber = 0;
         filterStatusNumber = 0;
@@ -97,7 +102,7 @@ public class TablesFragment extends Fragment{
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private void getTables(){
+    public void getTables(){
         int scrollY = rv_tables.getScrollY();
         setStatusVisible(View.GONE, View.VISIBLE);
         CollectionReference tablesCollectionRef = fireStore.collection("Tables");
@@ -165,6 +170,9 @@ public class TablesFragment extends Fragment{
     }
 
     private void initListeners(){
+        tv_tables_select.setOnClickListener(view -> {
+            TablesDialog.initTablesSelectBuilder(context, tableArrayForFilter, selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTables);
+        });
         spin_filter_status.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -193,9 +201,6 @@ public class TablesFragment extends Fragment{
             public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
-        });
-        tv_tables_select.setOnClickListener(view -> {
-            initTablesSelectBuilder();
         });
 
         ll_settings_btn.setOnClickListener(view -> {
@@ -234,8 +239,6 @@ public class TablesFragment extends Fragment{
         });
     }
 
-    private void initTablesSelectBuilder() {
-    }
 
     private void initAdapterForSpinners(){
         ArrayAdapter<CharSequence> adapterStatus = ArrayAdapter.createFromResource(
@@ -285,5 +288,19 @@ public class TablesFragment extends Fragment{
         });
     }
 
+    private void getTablesForFilter(){
+        TablesDialog.getTables(fireStore, new TablesDialog.OnTablesLoadedListener() {
+            @Override
+            public void onTablesLoaded(String[] tables) {
+                tableArrayForFilter = tables;
+                selectedTableForFilter = new boolean[tableArrayForFilter.length];
+            }
+
+            @Override
+            public void onTablesLoadFailed(Exception e) {
+                // Обработка ошибки при загрузке таблиц
+            }
+        });
+    }
 
 }

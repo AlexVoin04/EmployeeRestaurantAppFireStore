@@ -11,8 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginBottom="5dp">
+        android:gravity="end">
         <LinearLayout
             android:visibility="gone"
             android:id="@+id/ll_settings"
@@ -131,7 +130,12 @@
         </LinearLayout>
     </LinearLayout>
 
-
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="5dp"
+        android:background="@color/back" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"
