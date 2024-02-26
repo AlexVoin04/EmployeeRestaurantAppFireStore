@@ -49,7 +49,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
         } else {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table_smart, viewGroup, false);
         }
-//        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table, viewGroup, false);
         return new ViewHolder(v);
     }
     @SuppressLint({"SetTextI18n"})

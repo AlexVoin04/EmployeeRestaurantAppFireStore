@@ -1,13 +1,16 @@
 package com.example.employeerestaurantappfirestore.fragments;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,15 +21,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.DishInOrderAdapter;
-import com.example.employeerestaurantappfirestore.adapters.TableAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
+import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -85,9 +90,17 @@ public class OrderFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_order, container, false);
+        Configuration config = getResources().getConfiguration();
+        if (config.smallestScreenWidthDp >= 600) {
+            view = inflater.inflate(R.layout.fragment_order, container, false);
+            initViews();
+        } else {
+            view = inflater.inflate(R.layout.fragment_order_smart, container, false);
+            initViews();
+            smartScroll();
+        }
         initViews();
         initAdapterForSpinner();
         if (modelOrderList != null) {
@@ -145,6 +158,36 @@ public class OrderFragment extends Fragment {
             @Override
             public void onTablesLoadFailed(Exception e) {
                 // Обработка ошибки при загрузке таблиц
+            }
+        });
+    }
+
+    private OnScrollListener onScrollListener;
+    private void smartScroll() {
+        if (context instanceof MainActivity) {
+            onScrollListener = (OnScrollListener) context;
+        }
+        nsv_dish.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (scrollY > oldScrollY) {
+                    // Скроллинг вниз
+                    Log.d("ScrollDirection", "Scrolling Down");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollDown();
+                    }
+                } else if (scrollY < oldScrollY) {
+                    // Скроллинг вверх
+                    Log.d("ScrollDirection", "Scrolling Up");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollUp();
+                    }
+                } else if(scrollY==0) {
+                    Log.d("ScrollDirection", "Scrolling Up");
+                    if (onScrollListener != null) {
+                        onScrollListener.onScrollUp();
+                    }
+                }
             }
         });
     }

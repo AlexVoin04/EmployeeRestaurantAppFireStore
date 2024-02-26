@@ -5,7 +5,7 @@
     android:padding="10dp"
     android:background="@drawable/rounded_button"
     android:orientation="horizontal"
-    android:layout_margin="5dp">
+    android:layout_marginTop="5dp">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -19,7 +19,8 @@
             android:layout_height="wrap_content"
             android:text="Азу из говядины по татарски"
             android:textColor="@color/white"
-            android:textSize="18sp"/>
+            android:textSize="18sp"
+            android:layout_marginBottom="5dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -148,7 +149,8 @@
                 android:background="@drawable/button_back_stroke_white"
                 android:layout_marginStart="10dp"
                 android:paddingTop="5dp"
-                android:paddingBottom="5dp">
+                android:paddingBottom="5dp"
+                android:gravity="center">
 
                 <TextView
                     android:layout_width="wrap_content"
