@@ -17,4 +17,10 @@
         <item>4</item>
         <item>6</item>
     </string-array>
+    <string-array name="dish_statuses">
+        <item>Новое</item>
+        <item>Готово</item>
+        <item>Подано</item>
+        <item>Отмена</item>
+    </string-array>
 </resources>

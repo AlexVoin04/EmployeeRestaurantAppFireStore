@@ -1,9 +1,7 @@
 package com.example.employeerestaurantappfirestore.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -33,7 +31,7 @@ import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
-import com.example.employeerestaurantappfirestore.model.ModelOrder;
+import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -50,7 +48,7 @@ public class OrdersFragment extends Fragment {
     private View view;
     private RecyclerView rv_orders;
     private Button btn_added_order;
-    private List<ModelOrder> ordersList;
+    private List<ModelOrderList> ordersList;
     private RelativeLayout rl_orders_not_found;
     private Spinner spin_filter_orders;
     private Context context;
@@ -94,10 +92,9 @@ public class OrdersFragment extends Fragment {
 
     private void getTheLatestOrdersForToday() {
         int scrollY = rv_orders.getScrollY();
-        rl_orders_not_found.setVisibility(View.GONE);
-        rv_orders.setVisibility(View.VISIBLE);
+        setStatusVisible(View.GONE, View.VISIBLE);
         CollectionReference ordersCollectionRef = fireStore.collection("Orders");
-        Map<String, ModelOrder> latestOrdersMap = new HashMap<>();
+        Map<String, ModelOrderList> latestOrdersMap = new HashMap<>();
         ordersCollectionRef.addSnapshotListener((value, error) -> {
             if (error != null) {
                 Log.e("Firestore", "Error getting documents: ", error);
@@ -107,49 +104,50 @@ public class OrdersFragment extends Fragment {
             latestOrdersMap.clear();
             if (value != null) {
                 for (QueryDocumentSnapshot document : value) {
-                    ModelOrder modelOrder = document.toObject(ModelOrder.class);
-                    modelOrder.setOrderId(document.getId());
-                    modelOrder.getDishes().sort(Comparator.comparing(ModelOrder.OrderDishes::getDateTime).reversed());
-                    modelOrder.setDateTimeMax(modelOrder.getDishes().get(0).getDateTime());
+                    ModelOrderList modelOrderList = document.toObject(ModelOrderList.class);
+                    modelOrderList.setOrderId(document.getId());
+                    modelOrderList.getDishes().sort(Comparator.comparing(ModelOrderList.OrderDishes::getDateTime).reversed());
+                    modelOrderList.setDateTimeMax(modelOrderList.getDishes().get(0).getDateTime());
                     boolean completed = true;
-                    for (ModelOrder.OrderDishes orderDish : modelOrder.getDishes()) {
+                    for (ModelOrderList.OrderDishes orderDish : modelOrderList.getDishes()) {
                         if (!"3".equals(orderDish.getIdDishStatus().getId())) {
                             completed = false;
                             break;
                         }
                     }
-                    modelOrder.setCompleted(completed);
-                    if(isToday(modelOrder.getDateTimeMax())){
-                        String idTable = modelOrder.getIdTable().getId();
+                    modelOrderList.setCompleted(completed);
+                    if(isToday(modelOrderList.getDateTimeMax())){
+                        String idTable = modelOrderList.getIdTable().getId();
                         if (latestOrdersMap.containsKey(idTable)) {
-                            ModelOrder existingOrder = latestOrdersMap.get(idTable);
+                            ModelOrderList existingOrder = latestOrdersMap.get(idTable);
 
                             // Проверка, является ли текущая запись более поздней
                             assert existingOrder != null;
-                            existingOrder.getDishes().sort(Comparator.comparing(ModelOrder.OrderDishes::getDateTime).reversed());
+                            existingOrder.getDishes().sort(Comparator.comparing(ModelOrderList.OrderDishes::getDateTime).reversed());
                             Date existingOrderDate = existingOrder.getDishes().get(0).getDateTime();
-                            if (existingOrderDate == null || modelOrder.getDishes().get(0).getDateTime().after(existingOrderDate)) {
-                                latestOrdersMap.put(idTable, modelOrder);
+                            if (existingOrderDate == null || modelOrderList.getDishes().get(0).getDateTime().after(existingOrderDate)) {
+                                latestOrdersMap.put(idTable, modelOrderList);
                             }
                         } else {
                             // Если IdTable еще нет в мапе, добавляем текущую запись
-                            latestOrdersMap.put(idTable, modelOrder);
+                            latestOrdersMap.put(idTable, modelOrderList);
                         }
                     }
 
                 }
-                List<ModelOrder> newOrdersList = new ArrayList<>(latestOrdersMap.values());
+                List<ModelOrderList> newOrdersList = new ArrayList<>(latestOrdersMap.values());
                 ordersList.addAll(newOrdersList);
                 filterReadyOrder(newOrdersList);
 
-                ordersList.sort(Comparator.comparing(ModelOrder::getDateTimeMax));
+                ordersList.sort(Comparator.comparing(ModelOrderList::getDateTimeMax));
                 tablesSelect();
                 initAdapter();
                 if(ordersList.size()==0){
-                    ordersNotFound();
+                    Log.d("Firestore", "ordersList.size()==0");
+                    setStatusVisible(View.VISIBLE, View.GONE);
                     return;
                 }
-                for (ModelOrder order : ordersList) {
+                for (ModelOrderList order : ordersList) {
                     Log.d("TAG", order.getOrderId() + " => " + order.getCost() +" Date: " +order.getDateTimeMax().toString());
                 }
                 rv_orders.scrollToPosition(scrollY);
@@ -157,10 +155,10 @@ public class OrdersFragment extends Fragment {
         });
     }
 
-    private void filterReadyOrder(List<ModelOrder> newOrdersList){
+    private void filterReadyOrder(List<ModelOrderList> newOrdersList){
         if(filterNumber == 1){
             ordersList.clear();
-            for(ModelOrder order: newOrdersList){
+            for(ModelOrderList order: newOrdersList){
                 if(order.getCompleted()){
                     ordersList.add(order);
                 }
@@ -168,7 +166,7 @@ public class OrdersFragment extends Fragment {
         }
         else if (filterNumber==2){
             ordersList.clear();
-            for(ModelOrder order: newOrdersList){
+            for(ModelOrderList order: newOrdersList){
                 if(!order.getCompleted()){
                     ordersList.add(order);
                 }
@@ -177,8 +175,8 @@ public class OrdersFragment extends Fragment {
     }
     private void tablesSelect(){
         if (tableListForFilter.size()!=0){
-            List<ModelOrder> ordersToRemove = new ArrayList<>();
-            for (ModelOrder order : ordersList) {
+            List<ModelOrderList> ordersToRemove = new ArrayList<>();
+            for (ModelOrderList order : ordersList) {
                 boolean shouldRemove = true;
                 for (int j = 0; j < tableListForFilter.size(); j++) {
                     if (tableArrayForFilter[tableListForFilter.get(j)].equals(order.getIdTable().getId())) {
@@ -206,10 +204,9 @@ public class OrdersFragment extends Fragment {
                 && today.get(Calendar.DAY_OF_MONTH) == otherDate.get(Calendar.DAY_OF_MONTH);
     }
 
-    private void ordersNotFound(){
-        Log.d("Firestore", "ordersList.size()==0");
-        rl_orders_not_found.setVisibility(View.VISIBLE);
-        rv_orders.setVisibility(View.GONE);
+    private void setStatusVisible(int status1, int status2){
+        rl_orders_not_found.setVisibility(status1);
+        nsv_order.setVisibility(status2);
     }
 
     @SuppressLint("NotifyDataSetChanged")

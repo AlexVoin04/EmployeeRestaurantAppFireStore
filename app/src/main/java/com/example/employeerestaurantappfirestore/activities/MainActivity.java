@@ -21,9 +21,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
+import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
+import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.example.employeerestaurantappfirestore.utils.WakeLockManager;
 import com.google.android.material.snackbar.Snackbar;
@@ -31,7 +34,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 
-public class MainActivity extends AppCompatActivity implements OnScrollListener{
+public class MainActivity extends AppCompatActivity implements OnScrollListener, OnOrderItemClickListener {
     private FirebaseAuth mAuth;
     private LinearLayout ll_orders, ll_tables, ll_user;
     private TextView tv_title;
@@ -210,5 +213,11 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
     protected void onDestroy() {
         super.onDestroy();
         WakeLockManager.release();
+    }
+
+    @Override
+    public void onOrderItemClicked(ModelOrderList order) {
+        updateMenuUI(ll_orders, "Заказ");
+        loadDefaultFragment(OrderFragment.newInstance(order));
     }
 }

@@ -1,6 +1,7 @@
 package com.example.employeerestaurantappfirestore.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -14,18 +15,22 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
-import com.example.employeerestaurantappfirestore.model.ModelOrder;
+import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
+import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
+import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.google.firebase.firestore.DocumentReference;
 
 import java.util.List;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
 
-    List<ModelOrder> orderList;
+    private OnOrderItemClickListener listener;
+    List<ModelOrderList> orderList;
     OrdersFragment ordersFragment;
 
-    public OrderAdapter(List<ModelOrder> orderList, OrdersFragment ordersFragment){
+    public OrderAdapter(List<ModelOrderList> orderList, OrdersFragment ordersFragment){
         this.orderList = orderList;
         this.ordersFragment = ordersFragment;
     }
@@ -43,14 +48,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
         } else {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_order_smart, viewGroup, false);
         }
-//        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_order, viewGroup, false);
         return new ViewHolder(v);
     }
 
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int position){
-        ModelOrder order = orderList.get(position);
+        ModelOrderList order = orderList.get(position);
         final DocumentReference idTableRef = order.getIdTable();
         viewHolder.tv_table.setText(idTableRef.getId());
         viewHolder.tv_order_id.setText(order.getOrderId());
@@ -69,6 +73,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
             circleBackground = ContextCompat.getDrawable(ordersFragment.requireContext(), R.drawable.circle_background);
         }
         viewHolder.ll_finish_order.setBackground(circleBackground);
+        viewHolder.ll_order_info.setOnClickListener(view -> {
+            Context context = ordersFragment.getContext();
+            if (context instanceof MainActivity) {
+                listener = (OnOrderItemClickListener) context;
+                listener.onOrderItemClicked(order);
+            }
+        });
     }
 
     @Override
@@ -77,12 +88,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
     }
     public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView tv_order_id, tv_table;
-        LinearLayout ll_finish_order;
+        LinearLayout ll_finish_order, ll_order_info;
         public ViewHolder(@NonNull View itemView){
             super(itemView);
             tv_order_id = itemView.findViewById(R.id.tv_order_id);
             tv_table = itemView.findViewById(R.id.tv_table);
             ll_finish_order = itemView.findViewById(R.id.ll_finish_order);
+            ll_order_info = itemView.findViewById(R.id.ll_order_info);
         }
     }
 }

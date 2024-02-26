@@ -2,11 +2,9 @@ package com.example.employeerestaurantappfirestore.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.example.employeerestaurantappfirestore.model.ModelTablesData;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -15,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class TablesDialog {
     public static void initTablesSelectBuilder(Context context, String[] tableArray,
