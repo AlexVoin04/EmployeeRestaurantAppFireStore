@@ -25,6 +25,7 @@ import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.DishInOrderAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
+import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
@@ -48,7 +49,7 @@ import java.util.Objects;
  * Use the {@link OrderFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class OrderFragment extends Fragment {
+public class OrderFragment extends Fragment implements DishChangeListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -151,6 +152,7 @@ public class OrderFragment extends Fragment {
 
     private void initAdapter(List<ModelOrder.OrderDishes> dishes) {
         dishInOrderAdapter = new DishInOrderAdapter(dishes, OrderFragment.this);
+        dishInOrderAdapter.setDishChangeListener(OrderFragment.this);
         rv_dishes.setAdapter(dishInOrderAdapter);
     }
 
@@ -177,9 +179,11 @@ public class OrderFragment extends Fragment {
             if(editTextCost != modelOrderList.getCost()){
                 fields.put("cost", editTextCost);
             }
+            fields.put("dishes", modelOrderList.getDishes());
             if (!fields.isEmpty()) {
                 saveField(modelOrderList.getOrderId(), fields);
             }
+
         }
     }
 
@@ -277,8 +281,12 @@ public class OrderFragment extends Fragment {
             }
         });
     }
-
     public interface OnOrderLoadedListener {
         void onOrderLoaded(ModelOrderList order);
+    }
+
+    @Override
+    public void onChangeFields(List<ModelOrder.OrderDishes> dishes) {
+        modelOrderList.setDishes(dishes);
     }
 }

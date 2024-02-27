@@ -6,6 +6,8 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,9 +25,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
+import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.google.firebase.firestore.DocumentReference;
 
+
+import org.apache.commons.math3.util.Precision;
 
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
@@ -101,20 +106,20 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
 //        viewHolder.spin_status.setSelection(Integer.parseInt(dish.getIdDishStatus().getId())-1);
         Calendar dateAndTime = Calendar.getInstance();
         dateAndTime.setTime(dish.getDateTime());
-        initListeners(viewHolder, dateAndTime);
+        initListeners(viewHolder, dateAndTime, dish);
     }
 
-    private void initListeners(@NonNull final ViewHolder viewHolder, Calendar dateAndTime){
+    private void initListeners(@NonNull final ViewHolder viewHolder, Calendar dateAndTime, ModelOrder.OrderDishes dish){
         TimePickerDialog.OnTimeSetListener t= (view, hourOfDay, minute) -> {
             dateAndTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
             dateAndTime.set(Calendar.MINUTE, minute);
-            setInitialDateTime(viewHolder.tv_date_time, dateAndTime);
+            setInitialDateTime(viewHolder.tv_date_time, dateAndTime, dish);
         };
         DatePickerDialog.OnDateSetListener d = (view, year, monthOfYear, dayOfMonth) -> {
             dateAndTime.set(Calendar.YEAR, year);
             dateAndTime.set(Calendar.MONTH, monthOfYear);
             dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            setInitialDateTime(viewHolder.tv_date_time, dateAndTime);
+            setInitialDateTime(viewHolder.tv_date_time, dateAndTime, dish);
         };
         viewHolder.ll_date_btn.setOnClickListener(view ->
                 new DatePickerDialog(orderFragment.requireContext(), d,
@@ -129,13 +134,67 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
                         dateAndTime.get(Calendar.MINUTE), true)
                         .show()
         );
+
+        viewHolder.et_order_cost.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Действия перед изменением текста
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Действия при изменении текста
+                String newCost = charSequence.toString();
+                dish.setCost(Precision.round(Double.parseDouble(newCost),2));
+                sengChange();
+                // Здесь вы можете выполнить необходимые действия с новым текстом newText
+            }
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Действия после изменения текста
+            }
+        });
+
+        viewHolder.et_quantity.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Действия перед изменением текста
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Действия при изменении текста
+                String newQuantity = charSequence.toString();
+                dish.setQuantity(Integer.parseInt(newQuantity));
+                sengChange();
+                // Здесь вы можете выполнить необходимые действия с новым текстом newText
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Действия после изменения текста
+            }
+        });
     }
 
-    private void setInitialDateTime(TextView tv_date, Calendar dateAndTime) {
+    private DishChangeListener mListener;
+
+    public void setDishChangeListener(DishChangeListener listener) {
+        this.mListener = listener;
+    }
+
+    private void sengChange(){
+        if (mListener != null) {
+            mListener.onChangeFields(dishesList);
+        }
+    }
+
+    private void setInitialDateTime(TextView tv_date, Calendar dateAndTime, ModelOrder.OrderDishes dish) {
         tv_date.setText(DateUtils.formatDateTime(orderFragment.requireContext(),
                 dateAndTime.getTimeInMillis(),
                 DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR
                         | DateUtils.FORMAT_SHOW_TIME));
+        dish.setDateTime(dateAndTime.getTime());
+        sengChange();
     }
 
     private void initAdapterForSpinner(Spinner spinner){
