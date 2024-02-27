@@ -218,6 +218,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
     @Override
     public void onOrderItemClicked(ModelOrderList order) {
         updateMenuUI(ll_orders, "Заказ");
-        loadDefaultFragment(OrderFragment.newInstance(order));
+        loadDefaultFragment(OrderFragment.newInstance(order.getOrderId()));
     }
 }

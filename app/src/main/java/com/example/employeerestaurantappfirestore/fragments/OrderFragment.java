@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,10 +28,19 @@ import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.apache.commons.math3.util.Precision;
+
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -46,13 +56,14 @@ public class OrderFragment extends Fragment {
     private Context context;
     private FirebaseFirestore fireStore;
     private DishInOrderAdapter dishInOrderAdapter;
-    private static final String ARG_ORDER = "modelOrderList";
+    private static final String ARG_ORDER = "orderId";
     private TextView tv_order_id;
     private EditText et_order_comment, et_order_cost;
     private Spinner spin_table;
-    private LinearLayout ll_btn_check, ll_add_dish_btn;
+    private LinearLayout ll_btn_check, ll_add_dish_btn, ll_save_btn, ll_loading_data;
     private NestedScrollView nsv_dish;
     private RecyclerView rv_dishes;
+
 
     // TODO: Rename and change types of parameters
     private ModelOrderList modelOrderList;
@@ -65,14 +76,14 @@ public class OrderFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param modelOrderList Parameter 1.
+     * @param orderId Parameter 1.
      * @return A new instance of fragment OrderFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static OrderFragment newInstance(ModelOrderList modelOrderList) {
+    public static OrderFragment newInstance(String orderId) {
         OrderFragment fragment = new OrderFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_ORDER, modelOrderList);
+        args.putSerializable(ARG_ORDER, orderId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -85,7 +96,15 @@ public class OrderFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            modelOrderList = (ModelOrderList) getArguments().getSerializable(ARG_ORDER);
+            String id = (String) getArguments().getSerializable(ARG_ORDER);
+            if(id !=null){
+                getOrder(id, order -> {
+                    modelOrderList = order;
+                    if (modelOrderList != null) {
+                        getOrderData();
+                    }
+                });
+            }
         }
     }
 
@@ -103,9 +122,7 @@ public class OrderFragment extends Fragment {
         }
         initViews();
         initAdapterForSpinner();
-        if (modelOrderList != null) {
-            getOrderData();
-        }
+        initListeners();
 
         return view;
     }
@@ -119,9 +136,17 @@ public class OrderFragment extends Fragment {
         et_order_cost = view.findViewById(R.id.et_order_cost);
         ll_btn_check = view.findViewById(R.id.ll_btn_check);
         ll_add_dish_btn = view.findViewById(R.id.ll_add_dish_btn);
+        ll_save_btn = view.findViewById(R.id.ll_save_btn);
+        ll_loading_data = view.findViewById(R.id.ll_loading_data);
         nsv_dish = view.findViewById(R.id.nsv_dish);
         rv_dishes = view.findViewById(R.id.rv_dishes);
         rv_dishes.setLayoutManager(new LinearLayoutManager(context));
+    }
+
+    private void initListeners(){
+        ll_save_btn.setOnClickListener(view1 -> {
+            saveOrder();
+        });
     }
 
     private void initAdapter(List<ModelOrder.OrderDishes> dishes) {
@@ -134,6 +159,43 @@ public class OrderFragment extends Fragment {
         et_order_comment.setText(modelOrderList.getComment());
         et_order_cost.setText(String.valueOf(modelOrderList.getCost()));
         initAdapter(modelOrderList.getDishes());
+    }
+
+    private void saveOrder(){
+        if (modelOrderList != null){
+            Map<String, Object> fields = new HashMap<>();
+            String editTextComment = et_order_comment.getText().toString().trim();
+            if(!editTextComment.equals(modelOrderList.getComment())){
+                fields.put("comment", editTextComment);
+            }
+            String selectedSpinnerItem = (String) spin_table.getSelectedItem();
+            if(!selectedSpinnerItem.equals(modelOrderList.getIdTable().getId())){
+                DocumentReference tableReference = fireStore.collection("Tables").document(selectedSpinnerItem);
+                fields.put("idTable", tableReference);
+            }
+            double editTextCost = Precision.round(Double.parseDouble(et_order_cost.getText().toString()), 2);
+            if(editTextCost != modelOrderList.getCost()){
+                fields.put("cost", editTextCost);
+            }
+            if (!fields.isEmpty()) {
+                saveField(modelOrderList.getOrderId(), fields);
+            }
+        }
+    }
+
+    private void saveField(String orderId, Map<String, Object> fields){
+        DocumentReference orderReference = fireStore.collection("Orders").document(orderId);
+        orderReference.update(fields)
+                .addOnCompleteListener(updateTask -> {
+                    if (updateTask.isSuccessful()) {
+                        Snackbar.make(requireView(), "Данные сохранены", Snackbar.LENGTH_SHORT).show();
+                    } else {
+                        Exception e = updateTask.getException();
+                        if (e != null) {
+                            Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                        }
+                    }
+                });
     }
 
     private void initAdapterForSpinner(){
@@ -190,5 +252,33 @@ public class OrderFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void getOrder(String id, OnOrderLoadedListener listener){
+        DocumentReference orderRef = FirebaseFirestore.getInstance().collection("Orders").document(id);
+        orderRef.get().addOnCompleteListener(task -> {
+            ll_loading_data.setVisibility(View.VISIBLE);
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    ModelOrderList order = document.toObject(ModelOrderList.class);
+                    if (order != null) {
+                        order.setOrderId(document.getId());
+                    }
+                    listener.onOrderLoaded(order);
+                    ll_loading_data.setVisibility(View.GONE);
+                } else {
+                    // Документ не существует
+                    Snackbar.make(requireView(), "Документ не существует", Snackbar.LENGTH_SHORT).show();
+                }
+            } else {
+                // Обработка ошибки
+                Log.d("Firestore", "Ошибка при получении документа с заказом", task.getException());
+            }
+        });
+    }
+
+    public interface OnOrderLoadedListener {
+        void onOrderLoaded(ModelOrderList order);
     }
 }

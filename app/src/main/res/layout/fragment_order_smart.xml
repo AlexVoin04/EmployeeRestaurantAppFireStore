@@ -1,222 +1,259 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.OrderFragment"
-    android:orientation="horizontal">
+    tools:context=".fragments.OrderFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="horizontal">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Заказ:"
-                android:textSize="16sp"
-                android:textColor="@color/btnColor"
-                android:textStyle="bold"/>
-            <TextView
-                android:id="@+id/tv_order_id"
-                android:layout_marginStart="10dp"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:background="@drawable/rounded_button"
-                android:hint="Идентификатор заказа"
-                android:padding="10dp"
-                android:textSize="18sp"
-                android:textColorHint="@color/white"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="Комментарий:"
-                android:textSize="16sp"
-                android:textColor="@color/btnColor"
-                android:textStyle="bold"/>
-
-            <EditText
-                android:id="@+id/et_order_comment"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_marginStart="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/rounded_button"
-                android:gravity="top"
-                android:textSize="16sp"
-                android:hint="Введите комментарий"
-                android:inputType="textMultiLine"
-                android:padding="10dp"
-                android:scrollbars="vertical"
-                android:textColor="@color/white"
-                android:textColorHint="@color/white" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:orientation="horizontal">
-
+            android:layout_height="match_parent"
+            android:orientation="vertical">
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:orientation="vertical">
+                android:padding="10dp">
 
                 <LinearLayout
-                    android:id="@+id/ll_table"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Заказ:"
+                        android:textSize="16sp"
+                        android:textColor="@color/btnColor"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:id="@+id/tv_order_id"
+                        android:layout_marginStart="10dp"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:background="@drawable/rounded_button"
+                        android:hint="Идентификатор заказа"
+                        android:padding="10dp"
+                        android:textSize="18sp"
+                        android:textColorHint="@color/white"/>
+
+                    <LinearLayout
+                        android:id="@+id/ll_save_btn"
+                        android:layout_marginStart="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/rounded_button"
+                        android:padding="5dp">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_save"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp">
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:text="Комментарий:"
+                    android:textSize="16sp"
+                    android:textColor="@color/btnColor"
+                    android:textStyle="bold"/>
+
+                <EditText
+                    android:id="@+id/et_order_comment"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
                     android:background="@drawable/rounded_button"
-                    android:padding="10dp">
+                    android:gravity="top"
+                    android:textSize="16sp"
+                    android:hint="Введите комментарий"
+                    android:inputType="textMultiLine"
+                    android:padding="10dp"
+                    android:scrollbars="vertical"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/white" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/ll_table"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_button"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Стол:"
+                            android:layout_gravity="center_horizontal"
+                            android:textColor="@color/white"
+                            android:textSize="16sp" />
+
+                        <Spinner
+                            android:id="@+id/spin_table"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="5dp"
+                            android:backgroundTint="@color/white" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Цена:"
+                            android:textColor="@color/btnColor"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/et_order_cost"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:background="@drawable/rounded_button"
+                            android:gravity="top"
+                            android:hint="Стоимость"
+                            android:textSize="16sp"
+                            android:inputType="numberDecimal"
+                            android:padding="10dp"
+                            android:scrollbars="vertical"
+                            android:textColor="@color/white"
+                            android:textColorHint="@color/white" />
+                    </LinearLayout>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/ll_btn_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:paddingTop="11dp"
+                    android:paddingBottom="11dp"
+                    android:background="@drawable/button_back_stroke">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Стол:"
-                        android:layout_gravity="center_horizontal"
+                        android:layout_gravity="center_vertical"
+                        android:text="Оформить чек"
+                        android:textAllCaps="true"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
-                    <Spinner
-                        android:id="@+id/spin_table"
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:padding="10dp"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_layout_back">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Список блюд"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_centerHorizontal="true"
+                        android:layout_alignParentTop="true"
+                        />
+
+                    <LinearLayout
+                        android:id="@+id/ll_add_dish_btn"
+                        android:layout_width="45dp"
+                        android:layout_height="45dp"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/circle_btn"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:layout_alignParentTop="true">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="5dp"
+                            android:src="@drawable/ic_plus" />
+                    </LinearLayout>
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:background="@color/white" />
+
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/nsv_dish"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_dishes"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginStart="5dp"
-                        android:backgroundTint="@color/white" />
-                </LinearLayout>
+                        android:numColumns="auto_fit"
+                        android:stretchMode="columnWidth" />
+                </androidx.core.widget.NestedScrollView>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Цена:"
-                        android:textColor="@color/btnColor"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/et_order_cost"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/rounded_button"
-                        android:gravity="top"
-                        android:hint="Стоимость"
-                        android:textSize="16sp"
-                        android:inputType="number"
-                        android:padding="10dp"
-                        android:scrollbars="vertical"
-                        android:textColor="@color/white"
-                        android:textColorHint="@color/white" />
-                </LinearLayout>
             </LinearLayout>
-
-
-            <LinearLayout
-                android:id="@+id/ll_btn_check"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:paddingTop="11dp"
-                android:paddingBottom="11dp"
-                android:background="@drawable/button_back_stroke">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="Оформить чек"
-                    android:textAllCaps="true"
-                    android:textColor="@color/white"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:padding="10dp"
-            android:orientation="vertical"
-            android:background="@drawable/rounded_layout_back">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Список блюд"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:layout_centerHorizontal="true"
-                    android:layout_alignParentTop="true"
-                    />
-
-                <LinearLayout
-                    android:id="@+id/ll_add_dish_btn"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    android:layout_alignParentEnd="true"
-                    android:background="@drawable/circle_btn"
-                    android:gravity="center"
-                    android:padding="8dp"
-                    android:layout_alignParentTop="true">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="5dp"
-                        android:src="@drawable/ic_plus" />
-                </LinearLayout>
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="5dp"
-                android:background="@color/white" />
-
-            <androidx.core.widget.NestedScrollView
-                android:id="@+id/nsv_dish"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_dishes"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:numColumns="auto_fit"
-                    android:stretchMode="columnWidth" />
-            </androidx.core.widget.NestedScrollView>
-
-
         </LinearLayout>
     </LinearLayout>
+    <!-- TODO: Update blank fragment layout -->
 
+    <LinearLayout
+        android:id="@+id/ll_loading_data"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp">
 
-</LinearLayout>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+
+    </LinearLayout>
+
+</FrameLayout>
