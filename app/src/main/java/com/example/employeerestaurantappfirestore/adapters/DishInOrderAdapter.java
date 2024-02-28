@@ -3,9 +3,7 @@ package com.example.employeerestaurantappfirestore.adapters;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
@@ -13,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,22 +27,20 @@ import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
 import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.google.firebase.firestore.DocumentReference;
-
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.apache.commons.math3.util.Precision;
 
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.ViewHolder>{
     private List<ModelOrder.OrderDishes> dishesList;
-    private OrderFragment orderFragment;
+    private final OrderFragment orderFragment;
 
     public DishInOrderAdapter(List<ModelOrder.OrderDishes> dishesList, OrderFragment orderFragment) {
         this.dishesList = dishesList;
@@ -144,9 +141,10 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 // Действия при изменении текста
                 String newCost = charSequence.toString();
-                dish.setCost(Precision.round(Double.parseDouble(newCost),2));
-                sengChange();
-                // Здесь вы можете выполнить необходимые действия с новым текстом newText
+                if(!newCost.isEmpty()){
+                    dish.setCost(Precision.round(Double.parseDouble(newCost),2));
+                    sendChange(false);
+                }
             }
             @Override
             public void afterTextChanged(Editable editable) {
@@ -164,14 +162,64 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 // Действия при изменении текста
                 String newQuantity = charSequence.toString();
-                dish.setQuantity(Integer.parseInt(newQuantity));
-                sengChange();
-                // Здесь вы можете выполнить необходимые действия с новым текстом newText
+                if (!newQuantity.isEmpty()){
+                    if (Integer.parseInt(newQuantity) != 0){
+                        dish.setQuantity(Integer.parseInt(newQuantity));
+                        sendChange(false);
+                    }
+                }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
                 // Действия после изменения текста
+            }
+        });
+
+        viewHolder.iv_delete.setOnClickListener(view -> {
+            dishesList.remove(dish);
+            sendChange(true);
+        });
+
+        viewHolder.spin_status.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int selectedItemPosition, long l) {
+                // Вызов метода для обработки выбора значения в Spinner
+                int statusId = selectedItemPosition + 1;
+                DocumentReference dishStatusReference = FirebaseFirestore.getInstance()
+                        .collection("DishStatus")
+                        .document(String.valueOf(statusId));
+                if (!dishStatusReference.getId().equals(dish.getIdDishStatus().getId())){
+                    dish.setIdDishStatus(dishStatusReference);
+                    sendChange(false);
+                }
+//                ModelOrder.OrderDishes dish = statusDishes.get(posit);
+//                int statusId = selectedItemPosition + 1;
+//                DocumentReference dishStatusReference = FirebaseFirestore.getInstance()
+//                        .collection("DishStatus")
+//                        .document(String.valueOf(statusId));
+//                dish.setIdDishStatus(dishStatusReference);
+//                DocumentReference tableReference = FirebaseFirestore.getInstance()
+//                        .collection("Orders")
+//                        .document(orderId);
+//
+//                tableReference.update("dishes", statusDishes)
+//                        .addOnCompleteListener(updateTask -> {
+//                            if (updateTask.isSuccessful()) {
+//                                Log.d("DishInOrderAdapter", "Статус блюда в заказе "+orderId+" обновлен: " + statusId);
+//                            } else {
+//                                Exception e = updateTask.getException();
+//                                if (e != null) {
+//                                    Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+//                                }
+//                            }
+//                        });
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // Ваш код, который выполнится, если не выбрано ничего
             }
         });
     }
@@ -182,9 +230,9 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
         this.mListener = listener;
     }
 
-    private void sengChange(){
+    private void sendChange(boolean isDelete){
         if (mListener != null) {
-            mListener.onChangeFields(dishesList);
+            mListener.onChangeFields(dishesList, isDelete);
         }
     }
 
@@ -194,7 +242,7 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
                 DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR
                         | DateUtils.FORMAT_SHOW_TIME));
         dish.setDateTime(dateAndTime.getTime());
-        sengChange();
+        sendChange(false);
     }
 
     private void initAdapterForSpinner(Spinner spinner){

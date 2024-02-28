@@ -29,6 +29,7 @@ import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
+import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -56,7 +57,6 @@ public class OrderFragment extends Fragment implements DishChangeListener {
     private View view;
     private Context context;
     private FirebaseFirestore fireStore;
-    private DishInOrderAdapter dishInOrderAdapter;
     private static final String ARG_ORDER = "orderId";
     private TextView tv_order_id;
     private EditText et_order_comment, et_order_cost;
@@ -64,6 +64,7 @@ public class OrderFragment extends Fragment implements DishChangeListener {
     private LinearLayout ll_btn_check, ll_add_dish_btn, ll_save_btn, ll_loading_data;
     private NestedScrollView nsv_dish;
     private RecyclerView rv_dishes;
+    private List<ModelOrder.OrderDishes> newDishes;
 
 
     // TODO: Rename and change types of parameters
@@ -103,6 +104,7 @@ public class OrderFragment extends Fragment implements DishChangeListener {
                     modelOrderList = order;
                     if (modelOrderList != null) {
                         getOrderData();
+                        initAdapterForSpinner();
                     }
                 });
             }
@@ -121,8 +123,6 @@ public class OrderFragment extends Fragment implements DishChangeListener {
             initViews();
             smartScroll();
         }
-        initViews();
-        initAdapterForSpinner();
         initListeners();
 
         return view;
@@ -151,7 +151,7 @@ public class OrderFragment extends Fragment implements DishChangeListener {
     }
 
     private void initAdapter(List<ModelOrder.OrderDishes> dishes) {
-        dishInOrderAdapter = new DishInOrderAdapter(dishes, OrderFragment.this);
+        DishInOrderAdapter dishInOrderAdapter = new DishInOrderAdapter(dishes, OrderFragment.this);
         dishInOrderAdapter.setDishChangeListener(OrderFragment.this);
         rv_dishes.setAdapter(dishInOrderAdapter);
     }
@@ -179,9 +179,13 @@ public class OrderFragment extends Fragment implements DishChangeListener {
             if(editTextCost != modelOrderList.getCost()){
                 fields.put("cost", editTextCost);
             }
-            fields.put("dishes", modelOrderList.getDishes());
+            if(newDishes != null){
+                fields.put("dishes", newDishes);
+            }
             if (!fields.isEmpty()) {
-                saveField(modelOrderList.getOrderId(), fields);
+                if( NetworkUtils.checkNetworkAndShowSnackbar(getActivity())){
+                    saveField(modelOrderList.getOrderId(), fields);
+                }
             }
 
         }
@@ -192,7 +196,14 @@ public class OrderFragment extends Fragment implements DishChangeListener {
         orderReference.update(fields)
                 .addOnCompleteListener(updateTask -> {
                     if (updateTask.isSuccessful()) {
-                        Snackbar.make(requireView(), "Данные сохранены", Snackbar.LENGTH_SHORT).show();
+                        getOrder(orderId, order -> {
+                            modelOrderList = order;
+                            if (modelOrderList != null) {
+                                getOrderData();
+                                newDishes = null;
+                                Snackbar.make(requireView(), "Данные сохранены", Snackbar.LENGTH_SHORT).show();
+                            }
+                        });
                     } else {
                         Exception e = updateTask.getException();
                         if (e != null) {
@@ -286,7 +297,19 @@ public class OrderFragment extends Fragment implements DishChangeListener {
     }
 
     @Override
-    public void onChangeFields(List<ModelOrder.OrderDishes> dishes) {
-        modelOrderList.setDishes(dishes);
+    public void onChangeFields(List<ModelOrder.OrderDishes> dishes, boolean isDelete) {
+//        modelOrderList.setDishes(dishes);
+        newDishes = dishes;
+        double cost = 0;
+        for(ModelOrder.OrderDishes dish : dishes){
+            if(!dish.getIdDishStatus().getId().equals("4")){
+                cost += dish.getCost() * dish.getQuantity();
+            }
+        }
+        et_order_cost.setText(String.valueOf(cost));
+        Log.d("test", "test");
+        if(isDelete){
+            initAdapter(dishes);
+        }
     }
 }

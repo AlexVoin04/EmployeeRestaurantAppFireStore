@@ -69,7 +69,7 @@
                     android:layout_height="40dp"
                     android:padding="10dp"
                     android:src="@drawable/ic_delete"
-                    android:background="@drawable/rounded_layout_back" />
+                    android:background="@drawable/selector_background_dish_del" />
             </LinearLayout>
         </LinearLayout>
 
@@ -121,7 +121,7 @@
                     android:id="@+id/ll_date_btn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/button_back_stroke_white"
+                    android:background="@drawable/selector_background_dish"
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
                     android:gravity="center_horizontal">
@@ -137,7 +137,7 @@
                     android:id="@+id/ll_time_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/button_back_stroke_white"
+                    android:background="@drawable/selector_background_dish"
                     android:paddingTop="5dp"
                     android:layout_marginTop="5dp"
                     android:paddingBottom="5dp"
