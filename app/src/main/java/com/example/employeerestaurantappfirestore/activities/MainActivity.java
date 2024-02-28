@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
     private LinearLayout ll_orders, ll_tables, ll_user;
     private TextView tv_title;
     private ConstraintLayout cl_menu;
-    private ImageView iv_menu_selector;
+    private ImageView iv_menu_selector, iv_back;
 
     @SuppressLint({"MissingInflatedId", "UseCompatLoadingForDrawables"})
     @Override
@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         ll_user = findViewById(R.id.ll_user);
         tv_title = findViewById(R.id.tv_title);
         iv_menu_selector = findViewById(R.id.iv_menu_selector);
+        iv_back = findViewById(R.id.iv_back);
     }
 
     private void initListeners(){
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         fragmentTransaction.replace(R.id.fcv_fragment, fragment);
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.commit();
+        iv_back.setVisibility(View.GONE);
     }
 
     private void updateMenuUI(View selectedView, String titleText) {
@@ -219,5 +221,11 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
     public void onOrderItemClicked(ModelOrderList order) {
         updateMenuUI(ll_orders, "Заказ");
         loadDefaultFragment(OrderFragment.newInstance(order.getOrderId()));
+        iv_back.setVisibility(View.VISIBLE);
+        iv_back.setOnClickListener(view -> {
+            updateMenuUI(ll_orders, "Заказы");
+            loadDefaultFragment(new OrdersFragment());
+        });
     }
+
 }

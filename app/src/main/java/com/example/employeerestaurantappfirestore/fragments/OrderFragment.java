@@ -15,6 +15,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -81,7 +83,6 @@ public class OrderFragment extends Fragment implements DishChangeListener {
      * @param orderId Parameter 1.
      * @return A new instance of fragment OrderFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static OrderFragment newInstance(String orderId) {
         OrderFragment fragment = new OrderFragment();
         Bundle args = new Bundle();
@@ -94,6 +95,7 @@ public class OrderFragment extends Fragment implements DishChangeListener {
         return newInstance(null);
     }
 
+    // TODO: If null, make a call outside of this method (when initializing views)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -281,7 +283,8 @@ public class OrderFragment extends Fragment implements DishChangeListener {
                         order.setOrderId(document.getId());
                     }
                     listener.onOrderLoaded(order);
-                    ll_loading_data.setVisibility(View.GONE);
+//                    ll_loading_data.setVisibility(View.GONE);
+                    loadingHide();
                 } else {
                     // Документ не существует
                     Snackbar.make(requireView(), "Документ не существует", Snackbar.LENGTH_SHORT).show();
@@ -291,6 +294,32 @@ public class OrderFragment extends Fragment implements DishChangeListener {
                 Log.d("Firestore", "Ошибка при получении документа с заказом", task.getException());
             }
         });
+    }
+
+    private void loadingHide(){
+        if(ll_loading_data.getVisibility() != View.GONE){
+            TranslateAnimation animate = new TranslateAnimation(0, 0, 0, -ll_loading_data.getHeight()-50);
+            animate.setDuration(1500);
+
+            animate.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    // Начало анимации
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    // Завершение анимации
+                    ll_loading_data.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // Повторение анимации
+                }
+            });
+            ll_loading_data.startAnimation(animate);
+        }
     }
     public interface OnOrderLoadedListener {
         void onOrderLoaded(ModelOrderList order);

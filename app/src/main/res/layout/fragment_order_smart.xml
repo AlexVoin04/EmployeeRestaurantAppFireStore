@@ -245,14 +245,16 @@
     <LinearLayout
         android:id="@+id/ll_loading_data"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:layout_marginTop="10dp">
 
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="true" />
+            android:indeterminate="true"
+            android:background="@drawable/circle_btn_white"
+            android:indeterminateTint="@color/white"/>
 
     </LinearLayout>
 
