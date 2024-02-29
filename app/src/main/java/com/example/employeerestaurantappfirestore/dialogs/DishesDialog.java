@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.core.widget.NestedScrollView;
@@ -17,14 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.DishAdapter;
-import com.example.employeerestaurantappfirestore.adapters.TableAdapter;
-import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
 import com.example.employeerestaurantappfirestore.managers.MenuManager;
 import com.example.employeerestaurantappfirestore.model.ModelDishes;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -39,8 +36,9 @@ public class DishesDialog extends Dialog {
     private RecyclerView rv_dishes;
     private NestedScrollView nsv_dishes;
     private EditText et_comment;
-    private Button btn_cancellation, btn_added_dishes;
+    private LinearLayout ll_btn_cancellation, ll_btn_added_dishes;
     private DishAdapter dishAdapter;
+    private Spinner spin_dish_type;
 
     public DishesDialog(@NonNull Context context) {
         super(context);
@@ -52,15 +50,15 @@ public class DishesDialog extends Dialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_adding_dishes);
 
-        // Получите ширину экрана
+        // Получние ширины экрана
         DisplayMetrics displayMetrics = new DisplayMetrics();
         Objects.requireNonNull(getWindow()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
-
-        // Установите ширину диалога
-        getWindow().setLayout((int) (width), ViewGroup.LayoutParams.WRAP_CONTENT);
+        // Ширина диалога
+        getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         initViews();
+        initAdapterForSpinners();
         initListeners();
         initData();
         getDishes();
@@ -71,8 +69,9 @@ public class DishesDialog extends Dialog {
         rv_dishes.setLayoutManager(new LinearLayoutManager(context));
         nsv_dishes = findViewById(R.id.nsv_dishes);
         et_comment = findViewById(R.id.et_comment);
-        btn_cancellation = findViewById(R.id.btn_cancellation);
-        btn_added_dishes = findViewById(R.id.btn_added_dishes);
+        ll_btn_cancellation = findViewById(R.id.ll_btn_cancellation);
+        ll_btn_added_dishes = findViewById(R.id.ll_btn_added_dishes);
+        spin_dish_type = findViewById(R.id.spin_dish_type);
     }
 
     private void initAdapter() {
@@ -80,8 +79,18 @@ public class DishesDialog extends Dialog {
         rv_dishes.setAdapter(dishAdapter);
     }
 
+    private void initAdapterForSpinners(){
+        ArrayAdapter<CharSequence> adapterStatus = ArrayAdapter.createFromResource(
+                context,
+                R.array.dish_types,
+                android.R.layout.simple_spinner_item
+        );
+        adapterStatus.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spin_dish_type.setAdapter(adapterStatus);
+    }
+
     private void initListeners(){
-        btn_cancellation.setOnClickListener(view -> dismiss());
+        ll_btn_cancellation.setOnClickListener(view -> dismiss());
 
     }
 

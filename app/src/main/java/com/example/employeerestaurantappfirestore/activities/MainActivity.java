@@ -71,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
                 updateMenuUI(ll_tables, "Столы");
                 loadDefaultFragment(currentFragment);
             }
+            if (currentFragment instanceof OrderFragment){
+                orderBack();
+            }
 
         }
     }
@@ -224,6 +227,10 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
     public void onOrderItemClicked(ModelOrderList order) {
         updateMenuUI(ll_orders, "Заказ");
         loadDefaultFragment(OrderFragment.newInstance(order.getOrderId()));
+        orderBack();
+    }
+
+    private void orderBack(){
         iv_back.setVisibility(View.VISIBLE);
         iv_back.setOnClickListener(view -> {
             updateMenuUI(ll_orders, "Заказы");

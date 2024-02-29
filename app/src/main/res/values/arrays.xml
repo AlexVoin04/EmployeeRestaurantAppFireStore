@@ -23,4 +23,14 @@
         <item>Подано</item>
         <item>Отмена</item>
     </string-array>
+    <string-array name="dish_types">
+        <item>Все</item>
+        <item>Горячие блюда</item>
+        <item>Супы</item>
+        <item>Салаты</item>
+        <item>Гарниры</item>
+        <item>Десерты</item>
+        <item>Безалкогольные напитки</item>
+        <item>Алкогольные напитки</item>
+    </string-array>
 </resources>
