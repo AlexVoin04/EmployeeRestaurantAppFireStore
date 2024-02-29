@@ -4,7 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -28,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DishesDialog extends Dialog {
     private final Context context;
@@ -48,6 +51,15 @@ public class DishesDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_adding_dishes);
+
+        // Получите ширину экрана
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        Objects.requireNonNull(getWindow()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+
+        // Установите ширину диалога
+        getWindow().setLayout((int) (width), ViewGroup.LayoutParams.WRAP_CONTENT);
+
         initViews();
         initListeners();
         initData();

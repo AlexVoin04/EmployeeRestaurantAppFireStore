@@ -201,7 +201,7 @@
                         android:layout_width="45dp"
                         android:layout_height="45dp"
                         android:layout_alignParentEnd="true"
-                        android:background="@drawable/circle_btn"
+                        android:background="@drawable/selector_circle_btn"
                         android:gravity="center"
                         android:padding="8dp"
                         android:layout_alignParentTop="true">
