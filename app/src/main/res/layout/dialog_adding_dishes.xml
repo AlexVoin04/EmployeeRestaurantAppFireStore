@@ -11,6 +11,7 @@
         android:orientation="vertical">
 
         <androidx.appcompat.widget.SearchView
+            android:id="@+id/sv_dishes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -56,6 +57,31 @@
             android:numColumns="auto_fit"
             android:stretchMode="columnWidth" />
     </androidx.core.widget.NestedScrollView>
+    <RelativeLayout
+        android:visibility="gone"
+        android:id="@+id/rl_dishes_not_found"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerInParent="true"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:src="@drawable/ic_dishes_not_found" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:textColor="?android:attr/textColorPrimary"
+                android:gravity="center"
+                android:text="Блюда не найдены"/>
+        </LinearLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
