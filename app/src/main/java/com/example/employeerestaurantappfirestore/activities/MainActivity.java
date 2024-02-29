@@ -134,9 +134,12 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
     private void loadDefaultFragment(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fcv_fragment, fragment);
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+//        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.commit();
         iv_back.setVisibility(View.GONE);
+        if(getResources().getConfiguration().smallestScreenWidthDp < 600){
+            showMenu();
+        }
     }
 
     private void updateMenuUI(View selectedView, String titleText) {

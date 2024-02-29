@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    android:layout_marginStart="5dp"
+    android:layout_marginEnd="5dp"
+    android:background="@drawable/rounded_item_custom"
+    android:padding="5dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_title_dishes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:text="Азу из говядины по татарски"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <LinearLayout
+                android:id="@+id/ll_cost_with_discount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tv_cost_discount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/discount"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:text="100.00"/>
+                <TextView
+                    android:layout_marginStart="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/discount"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:text="руб."/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_cost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:text="200.00"/>
+
+                <TextView
+                    android:layout_marginStart="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:text="руб."/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_plus_minus_count"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end">
+
+            <LinearLayout
+                android:id="@+id/ll_minus_btn"
+                android:layout_width="30dp"
+                android:padding="5dp"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:background="@drawable/selector_background_order_save"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_minus_vector"/>
+            </LinearLayout>
+
+            <EditText
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:id="@+id/et_count"
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_layout_back"
+                android:inputType="number"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="1"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:scrollbars="vertical"
+                />
+
+            <LinearLayout
+                android:id="@+id/ll_plus_btn"
+                android:layout_width="30dp"
+                android:padding="5dp"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:background="@drawable/selector_background_order_save"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_plus_vector"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_added_btn"
+            android:layout_width="30dp"
+            android:padding="5dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical|end"
+            android:gravity="center"
+            android:background="@drawable/selector_background_order_save"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_plus_vector"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

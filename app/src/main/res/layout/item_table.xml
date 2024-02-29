@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:text="Количество мест:"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/tv_number_of_seats"
@@ -48,13 +48,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_marginTop="5dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -62,7 +62,8 @@
                 android:text="Статус стола:"
                 android:layout_gravity="center_vertical"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="18sp"
+                android:layout_marginBottom="2dp"/>
 
             <RadioGroup
                 android:id="@+id/rg_table_status"
@@ -74,7 +75,6 @@
                     android:id="@+id/rBtnFree"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
                     android:background="@drawable/radio_selecter"
                     android:button="@android:color/transparent"
                     android:checked="true"
@@ -85,7 +85,7 @@
                     android:id="@+id/rBtnOccupied"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="5dp"
                     android:button="@android:color/transparent"
                     android:background="@drawable/radio_selecter"
                     android:textColor="@drawable/radio_text_color"
@@ -95,7 +95,7 @@
                     android:id="@+id/rBtnReserved"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="5dp"
                     android:button="@android:color/transparent"
                     android:background="@drawable/radio_selecter"
                     android:textColor="@drawable/radio_text_color"

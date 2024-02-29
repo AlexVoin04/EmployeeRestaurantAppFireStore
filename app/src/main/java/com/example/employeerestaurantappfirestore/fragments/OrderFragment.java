@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.DishInOrderAdapter;
+import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
@@ -150,6 +151,10 @@ public class OrderFragment extends Fragment implements DishChangeListener {
         ll_save_btn.setOnClickListener(view1 -> {
             saveOrder();
         });
+        ll_add_dish_btn.setOnClickListener(view1 -> {
+            DishesDialog dishesDialog = new DishesDialog(requireContext());
+            dishesDialog.show();
+        });
     }
 
     private void initAdapter(List<ModelOrder.OrderDishes> dishes) {
@@ -186,6 +191,7 @@ public class OrderFragment extends Fragment implements DishChangeListener {
             }
             if (!fields.isEmpty()) {
                 if( NetworkUtils.checkNetworkAndShowSnackbar(getActivity())){
+                    ll_loading_data.setVisibility(View.VISIBLE);
                     saveField(modelOrderList.getOrderId(), fields);
                 }
             }
@@ -283,8 +289,8 @@ public class OrderFragment extends Fragment implements DishChangeListener {
                         order.setOrderId(document.getId());
                     }
                     listener.onOrderLoaded(order);
-//                    ll_loading_data.setVisibility(View.GONE);
                     loadingHide();
+//                    ll_loading_data.setVisibility(View.GONE);
                 } else {
                     // Документ не существует
                     Snackbar.make(requireView(), "Документ не существует", Snackbar.LENGTH_SHORT).show();
