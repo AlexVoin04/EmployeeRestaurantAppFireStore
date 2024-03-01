@@ -230,6 +230,13 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         orderBack();
     }
 
+    @Override
+    public void onNewItemClicked() {
+        updateMenuUI(ll_orders, "Заказ");
+        loadDefaultFragment(OrderFragment.newInstance(null));
+        orderBack();
+    }
+
     private void orderBack(){
         iv_back.setVisibility(View.VISIBLE);
         iv_back.setOnClickListener(view -> {

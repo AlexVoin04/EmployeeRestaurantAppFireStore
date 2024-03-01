@@ -30,6 +30,7 @@ import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
+import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.google.firebase.firestore.CollectionReference;
@@ -275,6 +276,12 @@ public class OrdersFragment extends Fragment {
                 ll_settings.startAnimation(animate);
             }
             opened = !opened;
+        });
+        btn_added_order.setOnClickListener(view1 -> {
+            if (context instanceof MainActivity) {
+                OnOrderItemClickListener listener = (OnOrderItemClickListener) context;
+                listener.onNewItemClicked();
+            }
         });
     }
 

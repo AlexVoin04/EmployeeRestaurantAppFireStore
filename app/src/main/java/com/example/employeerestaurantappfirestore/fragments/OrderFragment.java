@@ -36,12 +36,14 @@ import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.apache.commons.math3.util.Precision;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,6 +61,7 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private View view;
+    private String id;
     private Context context;
     private FirebaseFirestore fireStore;
     private static final String ARG_ORDER = "orderId";
@@ -102,7 +105,7 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            String id = (String) getArguments().getSerializable(ARG_ORDER);
+            id = (String) getArguments().getSerializable(ARG_ORDER);
             if(id !=null){
                 getOrder(id, order -> {
                     modelOrderList = order;
@@ -128,6 +131,11 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
             smartScroll();
         }
         initListeners();
+        if(id==null){
+            ll_loading_data.setVisibility(View.GONE);
+            initAdapterForSpinner();
+            et_order_cost.setText("0");
+        }
 
         return view;
     }
@@ -188,7 +196,7 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
             if(editTextCost != modelOrderList.getCost()){
                 fields.put("cost", editTextCost);
             }
-            if(newDishes != null){
+            if(checkDishes()){
                 fields.put("dishes", newDishes);
             }
             if (!fields.isEmpty()) {
@@ -197,9 +205,37 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
                     saveField(modelOrderList.getOrderId(), fields);
                 }
             }
+        }else{
+            if(checkDishes()){
+                CollectionReference ordersCollection = fireStore.collection("Orders");
+                DocumentReference tableReference = FirebaseFirestore.getInstance().collection("Tables").document(spin_table.getSelectedItem().toString());
+                double totalCost = Double.parseDouble(et_order_cost.getText().toString());
+                ModelOrder modelOrder = new ModelOrder(
+                        totalCost,
+                        tableReference,
+                        newDishes,
+                        et_order_comment.getText().toString()
+                );
+                ordersCollection.add(modelOrder)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                DocumentReference documentReference = task.getResult();
+                                if (documentReference != null) {
+                                    String orderId = documentReference.getId();
 
+                                }
+                            } else {
+                                Exception e = task.getException();
+                                if (e != null) {
+                                    Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                                }
+                            }
+                        });
+            }
         }
     }
+
+    private boolean checkDishes(){return newDishes != null && newDishes.size() != 0;}
 
     private void saveField(String orderId, Map<String, Object> fields){
         DocumentReference orderReference = fireStore.collection("Orders").document(orderId);
@@ -343,7 +379,11 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         }
 
         DocumentReference dishStatusReference = FirebaseFirestore.getInstance().collection("DishStatus").document("1");
-        newDishes = dishInOrderAdapter.getItems();
+        if(dishInOrderAdapter==null){
+            newDishes = new ArrayList<>();
+        }else{
+            newDishes = dishInOrderAdapter.getItems();
+        }
         for (ModelDishesQuantity dishesQuantity: dishesQuantityList){
             DocumentReference dishReference = FirebaseFirestore.getInstance().collection("Dishes").document(dishesQuantity.getDish().getId());
             ModelOrder.OrderDishes dish = new ModelOrder.OrderDishes(
@@ -369,7 +409,6 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
 
 //        // Прокручиваем RecyclerView в самый низ
 //        rv_dishes.post(() -> rv_dishes.smoothScrollToPosition(dishInOrderAdapter.getItemCount() - 1));
-//
 //        // После того, как RecyclerView завершит прокрутку, прокручиваем NestedScrollView в самый низ
 //        rv_dishes.postDelayed(() -> nsv_dish.fullScroll(View.FOCUS_DOWN), 100); // Добавляем небольшую задержку для корректной прокрутки
     }
