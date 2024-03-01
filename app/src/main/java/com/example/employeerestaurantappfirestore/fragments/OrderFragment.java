@@ -29,6 +29,7 @@ import com.example.employeerestaurantappfirestore.adapters.DishInOrderAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
+import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.interfaces.OrderExtensionListener;
 import com.example.employeerestaurantappfirestore.model.ModelDishesQuantity;
@@ -181,22 +182,29 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
     }
 
     private void saveOrder(){
+        if(!checkingCost()){
+            return;
+        }
+        if(!checkingDishes()){
+            Snackbar.make(requireView(), "Пустой заказ", Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        double editTextCost = Precision.round(Double.parseDouble(et_order_cost.getText().toString()), 2);
+        String selectedSpinnerItem = spin_table.getSelectedItem().toString();
+        DocumentReference tableReference = fireStore.collection("Tables").document(selectedSpinnerItem);
         if (modelOrderList != null){
             Map<String, Object> fields = new HashMap<>();
             String editTextComment = et_order_comment.getText().toString().trim();
             if(!editTextComment.equals(modelOrderList.getComment())){
                 fields.put("comment", editTextComment);
             }
-            String selectedSpinnerItem = (String) spin_table.getSelectedItem();
             if(!selectedSpinnerItem.equals(modelOrderList.getIdTable().getId())){
-                DocumentReference tableReference = fireStore.collection("Tables").document(selectedSpinnerItem);
                 fields.put("idTable", tableReference);
             }
-            double editTextCost = Precision.round(Double.parseDouble(et_order_cost.getText().toString()), 2);
             if(editTextCost != modelOrderList.getCost()){
                 fields.put("cost", editTextCost);
             }
-            if(checkDishes()){
+            if(checkingDishes()){
                 fields.put("dishes", newDishes);
             }
             if (!fields.isEmpty()) {
@@ -206,12 +214,10 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
                 }
             }
         }else{
-            if(checkDishes()){
+            if(checkingDishes()){
                 CollectionReference ordersCollection = fireStore.collection("Orders");
-                DocumentReference tableReference = FirebaseFirestore.getInstance().collection("Tables").document(spin_table.getSelectedItem().toString());
-                double totalCost = Double.parseDouble(et_order_cost.getText().toString());
                 ModelOrder modelOrder = new ModelOrder(
-                        totalCost,
+                        editTextCost,
                         tableReference,
                         newDishes,
                         et_order_comment.getText().toString()
@@ -222,7 +228,10 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
                                 DocumentReference documentReference = task.getResult();
                                 if (documentReference != null) {
                                     String orderId = documentReference.getId();
-
+                                    if (context instanceof MainActivity) {
+                                        OnOrderItemClickListener listener = (OnOrderItemClickListener) context;
+                                        listener.onOrderItemClicked(orderId);
+                                    }
                                 }
                             } else {
                                 Exception e = task.getException();
@@ -235,7 +244,16 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         }
     }
 
-    private boolean checkDishes(){return newDishes != null && newDishes.size() != 0;}
+    private boolean checkingCost(){
+        if(et_order_cost.getText().toString().isEmpty()){
+            Snackbar.make(requireView(), "Пустая стоимость", Snackbar.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkingDishes(){return newDishes != null && newDishes.size() != 0;}
+
 
     private void saveField(String orderId, Map<String, Object> fields){
         DocumentReference orderReference = fireStore.collection("Orders").document(orderId);

@@ -77,7 +77,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder>{
             Context context = ordersFragment.getContext();
             if (context instanceof MainActivity) {
                 listener = (OnOrderItemClickListener) context;
-                listener.onOrderItemClicked(order);
+                listener.onOrderItemClicked(order.getOrderId());
             }
         });
     }
