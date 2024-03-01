@@ -1,9 +1,13 @@
 package com.example.employeerestaurantappfirestore.dialogs;
 
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -14,18 +18,24 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.DishAdapter;
+import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
+import com.example.employeerestaurantappfirestore.interfaces.DishesListener;
+import com.example.employeerestaurantappfirestore.interfaces.OrderExtensionListener;
 import com.example.employeerestaurantappfirestore.managers.MenuManager;
 import com.example.employeerestaurantappfirestore.model.ModelDishes;
-import com.example.employeerestaurantappfirestore.model.ModelTableList;
+import com.example.employeerestaurantappfirestore.model.ModelDishesQuantity;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,11 +44,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DishesDialog extends Dialog {
+public class DishesDialog extends Dialog implements DishesListener {
     private final Context context;
     private FirebaseFirestore fireStore;
     private List<ModelDishes> dishes;
-    private List<ModelDishes> addedDishes;
+    private List<ModelDishesQuantity> addedDishes;
+    private String comment;
     private RecyclerView rv_dishes;
     private NestedScrollView nsv_dishes;
     private EditText et_comment;
@@ -49,10 +60,12 @@ public class DishesDialog extends Dialog {
     private int filterPos;
     private String queryText;
     private RelativeLayout rl_dishes_not_found;
+    private OrderExtensionListener orderExtensionListener;
 
-    public DishesDialog(@NonNull Context context) {
+    public DishesDialog(@NonNull Context context, OrderExtensionListener orderExtensionListener) {
         super(context);
         this.context = context;
+        this.orderExtensionListener = orderExtensionListener;
     }
 
     @Override
@@ -60,7 +73,7 @@ public class DishesDialog extends Dialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_adding_dishes);
 
-        // Получние ширины экрана
+        // Получение ширины экрана
         DisplayMetrics displayMetrics = new DisplayMetrics();
         Objects.requireNonNull(getWindow()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
@@ -87,7 +100,7 @@ public class DishesDialog extends Dialog {
     }
 
     private void initAdapter() {
-        dishAdapter = new DishAdapter(dishes, DishesDialog.this);
+        dishAdapter = new DishAdapter(dishes, DishesDialog.this, addedDishes, this);
         rv_dishes.setAdapter(dishAdapter);
     }
 
@@ -101,12 +114,25 @@ public class DishesDialog extends Dialog {
         spin_dish_type.setAdapter(adapterStatus);
     }
 
+    private boolean isDarkTheme() {
+        int nightModeFlags =
+                context.getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    @SuppressLint("ResourceType")
     private void initListeners(){
         ll_btn_cancellation.setOnClickListener(view -> dismiss());
         spin_dish_type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                if (isDarkTheme()) {
+                    ((TextView) view).setTextColor(ContextCompat.getColor(context.getApplicationContext(), R.color.white));
+                } else {
+                    ((TextView) view).setTextColor(ContextCompat.getColor(context.getApplicationContext(), R.color.black));
+                }
                 filterPos = pos;
                 getDishes();
             }
@@ -128,6 +154,34 @@ public class DishesDialog extends Dialog {
                 queryText = query;
                 getDishes();
                 return false;
+            }
+        });
+        ll_btn_added_dishes.setOnClickListener(view -> {
+            for(ModelDishesQuantity dishesQuantity: addedDishes){
+                Log.d("dishesQuantity", dishesQuantity.getDish().getName() + ", quantity: " + dishesQuantity.getQuantity());
+            }
+            if(addedDishes.size()==0){
+                Snackbar.make(nsv_dishes, "Блюда для добавления не выбраны", Snackbar.LENGTH_SHORT).show();
+            }else{
+                orderExtensionListener.onOrderExtension(addedDishes, comment);
+                dismiss();
+            }
+        });
+        et_comment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Действия перед изменением текста
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Действия при изменении текста
+                comment = charSequence.toString().trim();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Действия после изменения текста
             }
         });
     }
@@ -162,6 +216,8 @@ public class DishesDialog extends Dialog {
         dishes = new ArrayList<>();
         fireStore = FirebaseFirestore.getInstance();
         queryText = "";
+        addedDishes = new ArrayList<>();
+        comment = "";
     }
 
     private void getDishesMenu(){
@@ -183,7 +239,6 @@ public class DishesDialog extends Dialog {
     @SuppressLint("NotifyDataSetChanged")
     private void getDishes(){
         int scrollY = rv_dishes.getScrollY();
-        setStatusVisible(View.GONE, View.VISIBLE);
         CollectionReference dishesCollection = fireStore.collection("Dishes");
         dishesCollection.addSnapshotListener((dishesSnapshots, error) -> {
             if (error != null) {
@@ -218,6 +273,9 @@ public class DishesDialog extends Dialog {
             if (dishes.size()==0){
                 setStatusVisible(View.VISIBLE, View.GONE);
             }
+            else{
+                setStatusVisible(View.GONE, View.VISIBLE);
+            }
 
             initAdapter();
             dishAdapter.notifyDataSetChanged();
@@ -230,4 +288,68 @@ public class DishesDialog extends Dialog {
     }
 
 
+    @Override
+    public void onAddButtonClick(ModelDishesQuantity dishesQuantity) {
+        boolean exists = false;
+        if(addedDishes!=null){
+            for(ModelDishesQuantity existingQuantity : addedDishes){
+                if(existingQuantity.getDish().getId().equals(dishesQuantity.getDish().getId())){
+                    exists = true;
+                    break;
+                }
+            }
+        }
+        // Если элемента еще нет в списке, добавляем
+        if(!exists){
+            // Обработка dishesQuantity в MenuActivity
+            if (addedDishes == null) {
+                addedDishes = new ArrayList<>();
+            }
+            addedDishes.add(dishesQuantity);
+            Log.d("addedDishes", "Added: " + dishesQuantity.getDish().getId() + " " + dishesQuantity.getDish().getName());
+            getDishes();
+        }
+    }
+
+    @Override
+    public void onPlusButtonClick(String idDishes) {
+        ModelDishesQuantity foundDish = findDishById(idDishes);
+        if (foundDish != null) {
+            foundDish.setQuantity(foundDish.getQuantity() + 1);
+            getDishes();
+        }
+    }
+
+    @Override
+    public void onMinusButtonClick(String idDishes) {
+        ModelDishesQuantity foundDish = findDishById(idDishes);
+        if (foundDish != null) {
+            int newQuantity = foundDish.getQuantity() - 1;
+            if (newQuantity >= 1) {
+                foundDish.setQuantity(newQuantity);
+            }
+            else {
+                addedDishes.remove(foundDish);
+            }
+            getDishes();
+        }
+    }
+
+    @Override
+    public void onChangeTheQuantity(String idDishes, int quantity) {
+        ModelDishesQuantity foundDish = findDishById(idDishes);
+        if (foundDish != null) {
+            foundDish.setQuantity(quantity);
+//            getDishes();
+        }
+    }
+
+    private ModelDishesQuantity findDishById(String idDishes) {
+        for (ModelDishesQuantity modelDish : addedDishes) {
+            if (modelDish.getDish().getId().equals(idDishes)) {
+                return modelDish;
+            }
+        }
+        return null;
+    }
 }

@@ -1,11 +1,11 @@
 package com.example.employeerestaurantappfirestore.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,11 +30,11 @@ import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
+import com.example.employeerestaurantappfirestore.interfaces.OrderExtensionListener;
+import com.example.employeerestaurantappfirestore.model.ModelDishesQuantity;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -43,6 +43,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import org.apache.commons.math3.util.Precision;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ import java.util.Objects;
  * Use the {@link OrderFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class OrderFragment extends Fragment implements DishChangeListener {
+public class OrderFragment extends Fragment implements DishChangeListener, OrderExtensionListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -68,7 +69,7 @@ public class OrderFragment extends Fragment implements DishChangeListener {
     private NestedScrollView nsv_dish;
     private RecyclerView rv_dishes;
     private List<ModelOrder.OrderDishes> newDishes;
-
+    DishInOrderAdapter dishInOrderAdapter;
 
     // TODO: Rename and change types of parameters
     private ModelOrderList modelOrderList;
@@ -152,13 +153,14 @@ public class OrderFragment extends Fragment implements DishChangeListener {
             saveOrder();
         });
         ll_add_dish_btn.setOnClickListener(view1 -> {
-            DishesDialog dishesDialog = new DishesDialog(requireContext());
+            DishesDialog dishesDialog = new DishesDialog(requireContext(), this);
             dishesDialog.show();
         });
     }
 
     private void initAdapter(List<ModelOrder.OrderDishes> dishes) {
-        DishInOrderAdapter dishInOrderAdapter = new DishInOrderAdapter(dishes, OrderFragment.this);
+        dishes.sort((o1, o2) -> o2.getDateTime().compareTo(o1.getDateTime()));
+        dishInOrderAdapter = new DishInOrderAdapter(dishes, OrderFragment.this);
         dishInOrderAdapter.setDishChangeListener(OrderFragment.this);
         rv_dishes.setAdapter(dishInOrderAdapter);
     }
@@ -327,6 +329,51 @@ public class OrderFragment extends Fragment implements DishChangeListener {
             ll_loading_data.startAnimation(animate);
         }
     }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onOrderExtension(List<ModelDishesQuantity> dishesQuantityList, String comment) {
+        if(!comment.isEmpty()){
+            String existingText = et_order_comment.getText().toString().trim();
+            if(existingText.isEmpty()){
+                et_order_comment.setText(comment);
+            }else{
+                et_order_comment.setText(existingText + " | " + comment);
+            }
+        }
+
+        DocumentReference dishStatusReference = FirebaseFirestore.getInstance().collection("DishStatus").document("1");
+        newDishes = dishInOrderAdapter.getItems();
+        for (ModelDishesQuantity dishesQuantity: dishesQuantityList){
+            DocumentReference dishReference = FirebaseFirestore.getInstance().collection("Dishes").document(dishesQuantity.getDish().getId());
+            ModelOrder.OrderDishes dish = new ModelOrder.OrderDishes(
+                    new Date(),
+                    dishStatusReference,
+                    dishReference,
+                    dishesQuantity.getQuantity(),
+                    dishesQuantity.getDish().getFinalPrice());
+            newDishes.add(dish);
+        }
+        calculateCost(newDishes);
+        initAdapter(newDishes);
+        smoothScrollUp();
+    }
+
+    public void smoothScrollUp() {
+        int scrollY = rv_dishes.getScrollY();
+        int rvHeight = rv_dishes.getHeight();
+        int rvTotalHeight = rv_dishes.computeVerticalScrollRange();
+        int difference = rvTotalHeight - rvHeight;
+
+        nsv_dish.post(() -> nsv_dish.smoothScrollTo(0, scrollY + difference));
+
+//        // Прокручиваем RecyclerView в самый низ
+//        rv_dishes.post(() -> rv_dishes.smoothScrollToPosition(dishInOrderAdapter.getItemCount() - 1));
+//
+//        // После того, как RecyclerView завершит прокрутку, прокручиваем NestedScrollView в самый низ
+//        rv_dishes.postDelayed(() -> nsv_dish.fullScroll(View.FOCUS_DOWN), 100); // Добавляем небольшую задержку для корректной прокрутки
+    }
+
     public interface OnOrderLoadedListener {
         void onOrderLoaded(ModelOrderList order);
     }
@@ -335,6 +382,14 @@ public class OrderFragment extends Fragment implements DishChangeListener {
     public void onChangeFields(List<ModelOrder.OrderDishes> dishes, boolean isDelete) {
 //        modelOrderList.setDishes(dishes);
         newDishes = dishes;
+        calculateCost(dishes);
+        Log.d("test", "test");
+        if(isDelete){
+            initAdapter(dishes);
+        }
+    }
+
+    private void calculateCost(List<ModelOrder.OrderDishes> dishes){
         double cost = 0;
         for(ModelOrder.OrderDishes dish : dishes){
             if(!dish.getIdDishStatus().getId().equals("4")){
@@ -342,9 +397,5 @@ public class OrderFragment extends Fragment implements DishChangeListener {
             }
         }
         et_order_cost.setText(String.valueOf(cost));
-        Log.d("test", "test");
-        if(isDelete){
-            initAdapter(dishes);
-        }
     }
 }

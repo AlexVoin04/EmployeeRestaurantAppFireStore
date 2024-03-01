@@ -108,14 +108,7 @@ public class OrdersFragment extends Fragment {
                     modelOrderList.setOrderId(document.getId());
                     modelOrderList.getDishes().sort(Comparator.comparing(ModelOrderList.OrderDishes::getDateTime).reversed());
                     modelOrderList.setDateTimeMax(modelOrderList.getDishes().get(0).getDateTime());
-                    boolean completed = true;
-                    for (ModelOrderList.OrderDishes orderDish : modelOrderList.getDishes()) {
-                        if (!"3".equals(orderDish.getIdDishStatus().getId())) {
-                            completed = false;
-                            break;
-                        }
-                    }
-                    modelOrderList.setCompleted(completed);
+                    modelOrderList.setCompleted(modelOrderList.calculationComplete());
                     if(isToday(modelOrderList.getDateTimeMax())){
                         String idTable = modelOrderList.getIdTable().getId();
                         if (latestOrdersMap.containsKey(idTable)) {

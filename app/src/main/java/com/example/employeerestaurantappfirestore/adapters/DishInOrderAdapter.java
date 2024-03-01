@@ -193,28 +193,6 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
                     dish.setIdDishStatus(dishStatusReference);
                     sendChange(false);
                 }
-//                ModelOrder.OrderDishes dish = statusDishes.get(posit);
-//                int statusId = selectedItemPosition + 1;
-//                DocumentReference dishStatusReference = FirebaseFirestore.getInstance()
-//                        .collection("DishStatus")
-//                        .document(String.valueOf(statusId));
-//                dish.setIdDishStatus(dishStatusReference);
-//                DocumentReference tableReference = FirebaseFirestore.getInstance()
-//                        .collection("Orders")
-//                        .document(orderId);
-//
-//                tableReference.update("dishes", statusDishes)
-//                        .addOnCompleteListener(updateTask -> {
-//                            if (updateTask.isSuccessful()) {
-//                                Log.d("DishInOrderAdapter", "Статус блюда в заказе "+orderId+" обновлен: " + statusId);
-//                            } else {
-//                                Exception e = updateTask.getException();
-//                                if (e != null) {
-//                                    Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
-//                                }
-//                            }
-//                        });
-
             }
 
             @Override
@@ -259,6 +237,8 @@ public class DishInOrderAdapter extends RecyclerView.Adapter<DishInOrderAdapter.
     public int getItemCount() {
         return dishesList == null ? 0 : dishesList .size();
     }
+
+    public List<ModelOrder.OrderDishes> getItems(){return dishesList;}
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView tv_title, tv_date_time;

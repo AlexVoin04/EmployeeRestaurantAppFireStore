@@ -41,4 +41,16 @@ public class ModelOrderList extends ModelOrder implements Serializable {
     public void setCompleted(boolean completed) {
         isCompleted = completed;
     }
+
+    public boolean calculationComplete(){
+        boolean completed = true;
+        for (ModelOrderList.OrderDishes orderDish : getDishes()) {
+            String status = orderDish.getIdDishStatus().getId();
+            if ("1".equals(status) || "2".equals(status)) {
+                completed = false;
+                break;
+            }
+        }
+        return completed;
+    }
 }
