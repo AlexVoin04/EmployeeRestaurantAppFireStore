@@ -13,16 +13,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
-import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -32,13 +28,16 @@ import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.TableAdapter;
+import com.example.employeerestaurantappfirestore.model.ModelTable;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
+import com.example.employeerestaurantappfirestore.utils.Animations;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class TablesFragment extends Fragment{
@@ -52,16 +51,12 @@ public class TablesFragment extends Fragment{
     private List<ModelTableList> tableLists;
     private TableAdapter tableAdapter;
     private NestedScrollView nsv_table;
-    private TextView tv_tables_select;
+    private TextView tv_tables_select, tv_clear_filter;
     private LinearLayout ll_settings_btn, ll_settings;
     private boolean opened;
     private String[] tableArrayForFilter;
     private boolean[] selectedTableForFilter;
     private ArrayList<Integer> tableListForFilter;
-
-    public static TablesFragment newInstance() {
-        return new TablesFragment();
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -73,7 +68,7 @@ public class TablesFragment extends Fragment{
         } else {
             view =  inflater.inflate(R.layout.fragment_tables_smart, container, false);
             initViews();
-            smartScroll();
+            Animations.smartScroll(context, nsv_table);
         }
         initAdapterForSpinners();
         getTablesForFilter();
@@ -92,6 +87,7 @@ public class TablesFragment extends Fragment{
         ll_settings_btn = view.findViewById(R.id.ll_settings_btn);
         ll_settings = view.findViewById(R.id.ll_settings);
         tv_tables_select = view.findViewById(R.id.tv_tables_select);
+        tv_clear_filter = view.findViewById(R.id.tv_clear_filter);
         nsv_table = view.findViewById(R.id.nsv_table);
         spin_filter_status = view.findViewById(R.id.spin_filter_status);
         spin_filter_number_of_seats = view.findViewById(R.id.spin_filter_number_of_seats);
@@ -118,6 +114,7 @@ public class TablesFragment extends Fragment{
                     modelTableList.setTableId(document.getId());
                     tableLists.add(modelTableList);
                 }
+                tableLists.sort(Comparator.comparingInt(ModelTable::getNumber));
                 if(filterSeatsNumber!=0){
                     tableLists = filterTablesBySeatsNumber();
                 }
@@ -171,9 +168,14 @@ public class TablesFragment extends Fragment{
     }
 
     private void initListeners(){
-        tv_tables_select.setOnClickListener(view -> {
-            TablesDialog.initTablesSelectBuilder(context, tableArrayForFilter, selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTables);
-        });
+        tv_tables_select.setOnClickListener(view -> TablesDialog.initTablesSelectBuilder(
+                context,
+                tableArrayForFilter,
+                selectedTableForFilter,
+                tableListForFilter,
+                tv_tables_select,
+                this::getTables)
+        );
         spin_filter_status.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -204,39 +206,11 @@ public class TablesFragment extends Fragment{
             }
         });
 
-        ll_settings_btn.setOnClickListener(view -> {
-            if (!opened) {
-                // Показываем представление
-                ll_settings.setVisibility(View.VISIBLE);
-                TranslateAnimation animate = new TranslateAnimation(-ll_settings.getWidth(), 0, 0, 0);
-                animate.setDuration(500);
-                animate.setFillAfter(true);
-                ll_settings.startAnimation(animate);
-            } else {
-                // Скрываем представление
-                TranslateAnimation animate = new TranslateAnimation(0, -ll_settings.getWidth()-100, 0, 0);
-                animate.setDuration(500);
-                animate.setFillAfter(true);
-                animate.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                        // Начало анимации
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        // Завершение анимации
-                        ll_settings.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                        // Повторение анимации
-                    }
-                });
-                ll_settings.startAnimation(animate);
-            }
-            opened = !opened;
+        ll_settings_btn.setOnClickListener(view -> opened = Animations.hideAndShowSettings(opened, ll_settings, context));
+        tv_clear_filter.setOnClickListener(view1 -> {
+            spin_filter_status.setSelection(0);
+            spin_filter_number_of_seats.setSelection(0);
+            TablesDialog.clearAll(selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTablesForFilter);
         });
     }
 
@@ -276,36 +250,6 @@ public class TablesFragment extends Fragment{
         );
         adapterSeats.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin_filter_number_of_seats.setAdapter(adapterSeats);
-    }
-
-    private OnScrollListener onScrollListener;
-    private void smartScroll() {
-        if (context instanceof MainActivity) {
-            onScrollListener = (OnScrollListener) context;
-        }
-        nsv_table.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (scrollY > oldScrollY) {
-                    // Скроллинг вниз
-                    Log.d("ScrollDirection", "Scrolling Down");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollDown();
-                    }
-                } else if (scrollY < oldScrollY) {
-                    // Скроллинг вверх
-                    Log.d("ScrollDirection", "Scrolling Up");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollUp();
-                    }
-                } else if(scrollY==0) {
-                    Log.d("ScrollDirection", "Scrolling Up");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollUp();
-                    }
-                }
-            }
-        });
     }
 
     private void getTablesForFilter(){

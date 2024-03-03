@@ -157,12 +157,14 @@
                     android:id="@+id/ll_btn_check"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/button_back_stroke">
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:gravity="center"
+                    android:background="@drawable/selector_background_order_save">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
                         android:text="Оформить чек"
                         android:textAllCaps="true"
                         android:textColor="@color/white"

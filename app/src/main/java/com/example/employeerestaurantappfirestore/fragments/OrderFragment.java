@@ -30,11 +30,11 @@ import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.DishChangeListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
-import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.interfaces.OrderExtensionListener;
 import com.example.employeerestaurantappfirestore.model.ModelDishesQuantity;
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
+import com.example.employeerestaurantappfirestore.utils.Animations;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
@@ -59,8 +59,6 @@ import java.util.Objects;
  */
 public class OrderFragment extends Fragment implements DishChangeListener, OrderExtensionListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private View view;
     private String id;
     private Context context;
@@ -73,9 +71,7 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
     private NestedScrollView nsv_dish;
     private RecyclerView rv_dishes;
     private List<ModelOrder.OrderDishes> newDishes;
-    DishInOrderAdapter dishInOrderAdapter;
-
-    // TODO: Rename and change types of parameters
+    private DishInOrderAdapter dishInOrderAdapter;
     private ModelOrderList modelOrderList;
 
     public OrderFragment() {
@@ -97,11 +93,6 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         return fragment;
     }
 
-    public static OrderFragment newInstanceNewOrder() {
-        return newInstance(null);
-    }
-
-    // TODO: If null, make a call outside of this method (when initializing views)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,11 +120,12 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         } else {
             view = inflater.inflate(R.layout.fragment_order_smart, container, false);
             initViews();
-            smartScroll();
+            Animations.smartScroll(context, nsv_dish);
         }
         initListeners();
         if(id==null){
             ll_loading_data.setVisibility(View.GONE);
+            ll_btn_check.setVisibility(View.GONE);
             initAdapterForSpinner();
             et_order_cost.setText("0");
         }
@@ -158,9 +150,7 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
     }
 
     private void initListeners(){
-        ll_save_btn.setOnClickListener(view1 -> {
-            saveOrder();
-        });
+        ll_save_btn.setOnClickListener(view1 -> saveOrder());
         ll_add_dish_btn.setOnClickListener(view1 -> {
             DishesDialog dishesDialog = new DishesDialog(requireContext(), this);
             dishesDialog.show();
@@ -303,36 +293,6 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         });
     }
 
-    private OnScrollListener onScrollListener;
-    private void smartScroll() {
-        if (context instanceof MainActivity) {
-            onScrollListener = (OnScrollListener) context;
-        }
-        nsv_dish.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (scrollY > oldScrollY) {
-                    // Скроллинг вниз
-                    Log.d("ScrollDirection", "Scrolling Down");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollDown();
-                    }
-                } else if (scrollY < oldScrollY) {
-                    // Скроллинг вверх
-                    Log.d("ScrollDirection", "Scrolling Up");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollUp();
-                    }
-                } else if(scrollY==0) {
-                    Log.d("ScrollDirection", "Scrolling Up");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollUp();
-                    }
-                }
-            }
-        });
-    }
-
     private void getOrder(String id, OnOrderLoadedListener listener){
         DocumentReference orderRef = FirebaseFirestore.getInstance().collection("Orders").document(id);
         orderRef.get().addOnCompleteListener(task -> {
@@ -424,11 +384,6 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         int difference = rvTotalHeight - rvHeight;
 
         nsv_dish.post(() -> nsv_dish.smoothScrollTo(0, scrollY + difference));
-
-//        // Прокручиваем RecyclerView в самый низ
-//        rv_dishes.post(() -> rv_dishes.smoothScrollToPosition(dishInOrderAdapter.getItemCount() - 1));
-//        // После того, как RecyclerView завершит прокрутку, прокручиваем NestedScrollView в самый низ
-//        rv_dishes.postDelayed(() -> nsv_dish.fullScroll(View.FOCUS_DOWN), 100); // Добавляем небольшую задержку для корректной прокрутки
     }
 
     public interface OnOrderLoadedListener {
@@ -453,6 +408,6 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
                 cost += dish.getCost() * dish.getQuantity();
             }
         }
-        et_order_cost.setText(String.valueOf(cost));
+        et_order_cost.setText(String.valueOf(Precision.round(cost,2)));
     }
 }

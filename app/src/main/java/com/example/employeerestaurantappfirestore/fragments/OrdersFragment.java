@@ -16,11 +16,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -31,8 +28,8 @@ import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.TablesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
-import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
+import com.example.employeerestaurantappfirestore.utils.Animations;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -48,24 +45,19 @@ import java.util.Map;
 public class OrdersFragment extends Fragment {
     private View view;
     private RecyclerView rv_orders;
-    private Button btn_added_order;
     private List<ModelOrderList> ordersList;
     private RelativeLayout rl_orders_not_found;
     private Spinner spin_filter_orders;
     private Context context;
     private Integer filterNumber;
-    private TextView tv_tables_select;
+    private TextView tv_tables_select, tv_clear_filter;
     private FirebaseFirestore fireStore;
     private String[] tableArrayForFilter;
     private boolean[] selectedTableForFilter;
     private ArrayList<Integer> tableListForFilter;
-    private LinearLayout ll_settings_btn, ll_settings;
+    private LinearLayout ll_settings_btn, ll_settings, ll_btn_added_order;
     private boolean opened;
     private NestedScrollView nsv_order;
-
-    public static OrdersFragment newInstance() {
-        return new OrdersFragment();
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,7 +73,7 @@ public class OrdersFragment extends Fragment {
         } else {
             view = inflater.inflate(R.layout.fragment_orders_smart, container, false);
             initViews();
-            smartScroll();
+            Animations.smartScroll(context, nsv_order);
         }
         initAdapterForSpinner();
         getTablesForFilter();
@@ -221,10 +213,11 @@ public class OrdersFragment extends Fragment {
         rv_orders = view.findViewById(R.id.rv_orders);
         rv_orders.setLayoutManager(new GridLayoutManager(context, 1));
         rv_orders.setHasFixedSize(true);
-        btn_added_order = view.findViewById(R.id.btn_added_order);
+        ll_btn_added_order = view.findViewById(R.id.ll_btn_added_order);
         rl_orders_not_found = view.findViewById(R.id.rl_orders_not_found);
         spin_filter_orders = view.findViewById(R.id.spin_filter_orders);
         tv_tables_select = view.findViewById(R.id.tv_tables_select);
+        tv_clear_filter = view.findViewById(R.id.tv_clear_filter);
     }
 
     private void initListeners(){
@@ -240,48 +233,24 @@ public class OrdersFragment extends Fragment {
 
             }
         });
-        tv_tables_select.setOnClickListener(view -> {
-            TablesDialog.initTablesSelectBuilder(context, tableArrayForFilter, selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTheLatestOrdersForToday);
-        });
-        ll_settings_btn.setOnClickListener(view -> {
-            if (!opened) {
-                // Показываем представление
-                ll_settings.setVisibility(View.VISIBLE);
-                TranslateAnimation animate = new TranslateAnimation(-ll_settings.getWidth(), 0, 0, 0);
-                animate.setDuration(500);
-                animate.setFillAfter(true);
-                ll_settings.startAnimation(animate);
-            } else {
-                // Скрываем представление
-                TranslateAnimation animate = new TranslateAnimation(0, -ll_settings.getWidth()-100, 0, 0);
-                animate.setDuration(500);
-                animate.setFillAfter(true);
-                animate.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                        // Начало анимации
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        // Завершение анимации
-                        ll_settings.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                        // Повторение анимации
-                    }
-                });
-                ll_settings.startAnimation(animate);
-            }
-            opened = !opened;
-        });
-        btn_added_order.setOnClickListener(view1 -> {
+        tv_tables_select.setOnClickListener(view -> TablesDialog.initTablesSelectBuilder(
+                context,
+                tableArrayForFilter,
+                selectedTableForFilter,
+                tableListForFilter,
+                tv_tables_select,
+                this::getTheLatestOrdersForToday)
+        );
+        ll_settings_btn.setOnClickListener(view -> opened = Animations.hideAndShowSettings(opened, ll_settings, context));
+        ll_btn_added_order.setOnClickListener(view1 -> {
             if (context instanceof MainActivity) {
                 OnOrderItemClickListener listener = (OnOrderItemClickListener) context;
                 listener.onNewItemClicked();
             }
+        });
+        tv_clear_filter.setOnClickListener(view1 -> {
+            spin_filter_orders.setSelection(0);
+            TablesDialog.clearAll(selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTablesForFilter);
         });
     }
 
@@ -293,36 +262,6 @@ public class OrdersFragment extends Fragment {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin_filter_orders.setAdapter(adapter);
-    }
-
-    private OnScrollListener onScrollListener;
-    private void smartScroll() {
-        if (context instanceof MainActivity) {
-            onScrollListener = (OnScrollListener) context;
-        }
-        nsv_order.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (scrollY > oldScrollY) {
-                    // Скроллинг вниз
-                    Log.d("ScrollDirection", "Scrolling Down");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollDown();
-                    }
-                } else if (scrollY < oldScrollY) {
-                    // Скроллинг вверх
-                    Log.d("ScrollDirection", "Scrolling Up");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollUp();
-                    }
-                } else if(scrollY==0) {
-                    Log.d("ScrollDirection", "Scrolling Up");
-                    if (onScrollListener != null) {
-                        onScrollListener.onScrollUp();
-                    }
-                }
-            }
-        });
     }
 
     private void getTablesForFilter(){

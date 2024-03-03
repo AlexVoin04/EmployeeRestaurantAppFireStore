@@ -47,16 +47,18 @@ public class TablesDialog {
             dialogInterface.dismiss();
         });
         builder.setNeutralButton("Все столы", (dialogInterface, i) -> {
-            for (int j = 0; j < selectedTables.length; j++) {
-                selectedTables[j] = false;
-                tableList.clear();
-                tv_tables_select.setText("");
-                if (onSelectionCompleted != null) {
-                    onSelectionCompleted.run();
-                }
-            }
+            clearAll(selectedTables, tableList, tv_tables_select, onSelectionCompleted);
         });
         builder.show();
+    }
+
+    public static void clearAll(boolean[] selectedTables, ArrayList<Integer> tableList, TextView tv_tables_select, Runnable onSelectionCompleted){
+        Arrays.fill(selectedTables, false);
+        tableList.clear();
+        tv_tables_select.setText("");
+        if (onSelectionCompleted != null) {
+            onSelectionCompleted.run();
+        }
     }
 
     public static void getTables(FirebaseFirestore fireStore, OnTablesLoadedListener listener) {

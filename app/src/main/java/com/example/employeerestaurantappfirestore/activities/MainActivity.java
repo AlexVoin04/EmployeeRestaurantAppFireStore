@@ -26,13 +26,11 @@ import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
 import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
-import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.example.employeerestaurantappfirestore.utils.WakeLockManager;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 
 public class MainActivity extends AppCompatActivity implements OnScrollListener, OnOrderItemClickListener {
     private FirebaseAuth mAuth;
@@ -165,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         if(cl_menu.getVisibility() != View.VISIBLE){
             cl_menu.setVisibility(View.VISIBLE);
             TranslateAnimation animate = new TranslateAnimation(0, 0, cl_menu.getHeight(), 0);
-            // duration of animation
             animate.setDuration(500);
             animate.setFillAfter(true);
             cl_menu.startAnimation(animate);
@@ -177,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         if(cl_menu.getVisibility() != View.GONE){
             TranslateAnimation animate = new TranslateAnimation(0, 0, 0, cl_menu.getHeight()+100);
             animate.setDuration(500);
-
             animate.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
