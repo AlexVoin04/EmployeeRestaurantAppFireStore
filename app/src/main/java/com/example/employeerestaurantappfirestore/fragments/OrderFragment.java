@@ -175,28 +175,11 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
         if(!checkingCost()){
             return;
         }
-        if(!checkingDishes()){
-            Snackbar.make(requireView(), "Пустой заказ", Snackbar.LENGTH_SHORT).show();
-            return;
-        }
         double editTextCost = Precision.round(Double.parseDouble(et_order_cost.getText().toString()), 2);
         String selectedSpinnerItem = spin_table.getSelectedItem().toString();
         DocumentReference tableReference = fireStore.collection("Tables").document(selectedSpinnerItem);
         if (modelOrderList != null){
-            Map<String, Object> fields = new HashMap<>();
-            String editTextComment = et_order_comment.getText().toString().trim();
-            if(!editTextComment.equals(modelOrderList.getComment())){
-                fields.put("comment", editTextComment);
-            }
-            if(!selectedSpinnerItem.equals(modelOrderList.getIdTable().getId())){
-                fields.put("idTable", tableReference);
-            }
-            if(editTextCost != modelOrderList.getCost()){
-                fields.put("cost", editTextCost);
-            }
-            if(checkingDishes()){
-                fields.put("dishes", newDishes);
-            }
+            Map<String, Object> fields = checkingFields(selectedSpinnerItem, editTextCost, tableReference);
             if (!fields.isEmpty()) {
                 if( NetworkUtils.checkNetworkAndShowSnackbar(getActivity())){
                     ll_loading_data.setVisibility(View.VISIBLE);
@@ -204,34 +187,60 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
                 }
             }
         }else{
-            if(checkingDishes()){
-                CollectionReference ordersCollection = fireStore.collection("Orders");
-                ModelOrder modelOrder = new ModelOrder(
-                        editTextCost,
-                        tableReference,
-                        newDishes,
-                        et_order_comment.getText().toString()
-                );
-                ordersCollection.add(modelOrder)
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                DocumentReference documentReference = task.getResult();
-                                if (documentReference != null) {
-                                    String orderId = documentReference.getId();
-                                    if (context instanceof MainActivity) {
-                                        OnOrderItemClickListener listener = (OnOrderItemClickListener) context;
-                                        listener.onOrderItemClicked(orderId);
-                                    }
-                                }
-                            } else {
-                                Exception e = task.getException();
-                                if (e != null) {
-                                    Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+            if(!checkingDishes()){
+                Snackbar.make(requireView(), "Пустой заказ", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+            CollectionReference ordersCollection = fireStore.collection("Orders");
+            ModelOrder modelOrder = new ModelOrder(
+                    editTextCost,
+                    tableReference,
+                    newDishes,
+                    et_order_comment.getText().toString()
+            );
+            ordersCollection.add(modelOrder)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            DocumentReference documentReference = task.getResult();
+                            if (documentReference != null) {
+                                String orderId = documentReference.getId();
+                                if (context instanceof MainActivity) {
+                                    OnOrderItemClickListener listener = (OnOrderItemClickListener) context;
+                                    listener.onOrderItemClicked(orderId);
                                 }
                             }
-                        });
+                        } else {
+                            Exception e = task.getException();
+                            if (e != null) {
+                                Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                            }
+                        }
+                    });
+        }
+    }
+
+    private Map<String, Object> checkingFields(String selectedSpinnerItem, double editTextCost, DocumentReference tableReference){
+        Map<String, Object> fields = new HashMap<>();
+        String editTextComment = et_order_comment.getText().toString().trim();
+        if(!editTextComment.equals(modelOrderList.getComment())){
+            fields.put("comment", editTextComment);
+        }
+        if(!selectedSpinnerItem.equals(modelOrderList.getIdTable().getId())){
+            fields.put("idTable", tableReference);
+        }
+        if(editTextCost != modelOrderList.getCost()){
+            fields.put("cost", editTextCost);
+        }
+        if(newDishes!=null){
+            if(newDishes.size()!=0){
+                fields.put("dishes", newDishes);
+            }
+            else {
+                Snackbar.make(requireView(), "Пустой заказ", Snackbar.LENGTH_SHORT).show();
+                fields.clear();
             }
         }
+        return fields;
     }
 
     private boolean checkingCost(){
@@ -395,7 +404,6 @@ public class OrderFragment extends Fragment implements DishChangeListener, Order
 //        modelOrderList.setDishes(dishes);
         newDishes = dishes;
         calculateCost(dishes);
-        Log.d("test", "test");
         if(isDelete){
             initAdapter(dishes);
         }

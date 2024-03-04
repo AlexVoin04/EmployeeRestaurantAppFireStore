@@ -43,12 +43,8 @@ public class TablesDialog {
                 onSelectionCompleted.run();
             }
         });
-        builder.setNegativeButton("Отмена", (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
-        builder.setNeutralButton("Все столы", (dialogInterface, i) -> {
-            clearAll(selectedTables, tableList, tv_tables_select, onSelectionCompleted);
-        });
+        builder.setNegativeButton("Отмена", (dialogInterface, i) -> dialogInterface.dismiss());
+        builder.setNeutralButton("Все столы", (dialogInterface, i) -> clearAll(selectedTables, tableList, tv_tables_select, onSelectionCompleted));
         builder.show();
     }
 
@@ -84,12 +80,11 @@ public class TablesDialog {
         void onTablesLoadFailed(Exception e);
     }
 
-    public static String[] sortTablesDialog(String[] tableArray){
+    public static void sortTablesDialog(String[] tableArray){
         Comparator<String> numericStringComparator = Comparator.comparingInt(Integer::parseInt);
 
         // Сортировка массива строк с использованием компаратора
         Arrays.sort(tableArray, numericStringComparator);
 
-        return tableArray;
     }
 }

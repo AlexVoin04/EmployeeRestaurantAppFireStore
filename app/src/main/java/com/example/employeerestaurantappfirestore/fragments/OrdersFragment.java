@@ -250,7 +250,7 @@ public class OrdersFragment extends Fragment {
         });
         tv_clear_filter.setOnClickListener(view1 -> {
             spin_filter_orders.setSelection(0);
-            TablesDialog.clearAll(selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTablesForFilter);
+            TablesDialog.clearAll(selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTheLatestOrdersForToday);
         });
     }
 

@@ -29,7 +29,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.DishAdapter;
-import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
 import com.example.employeerestaurantappfirestore.interfaces.DishesListener;
 import com.example.employeerestaurantappfirestore.interfaces.OrderExtensionListener;
 import com.example.employeerestaurantappfirestore.managers.MenuManager;
@@ -60,7 +59,7 @@ public class DishesDialog extends Dialog implements DishesListener {
     private int filterPos;
     private String queryText;
     private RelativeLayout rl_dishes_not_found;
-    private OrderExtensionListener orderExtensionListener;
+    private final OrderExtensionListener orderExtensionListener;
 
     public DishesDialog(@NonNull Context context, OrderExtensionListener orderExtensionListener) {
         super(context);
@@ -100,7 +99,7 @@ public class DishesDialog extends Dialog implements DishesListener {
     }
 
     private void initAdapter() {
-        dishAdapter = new DishAdapter(dishes, DishesDialog.this, addedDishes, this);
+        dishAdapter = new DishAdapter(dishes, addedDishes, this);
         rv_dishes.setAdapter(dishAdapter);
     }
 

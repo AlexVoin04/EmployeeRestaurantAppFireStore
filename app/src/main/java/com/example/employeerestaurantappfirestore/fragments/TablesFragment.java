@@ -210,7 +210,7 @@ public class TablesFragment extends Fragment{
         tv_clear_filter.setOnClickListener(view1 -> {
             spin_filter_status.setSelection(0);
             spin_filter_number_of_seats.setSelection(0);
-            TablesDialog.clearAll(selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTablesForFilter);
+            TablesDialog.clearAll(selectedTableForFilter, tableListForFilter, tv_tables_select, this::getTables);
         });
     }
 

@@ -1,6 +1,5 @@
 package com.example.employeerestaurantappfirestore.adapters;
 
-import android.content.res.Configuration;
 import android.graphics.Paint;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,33 +7,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
-import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
 import com.example.employeerestaurantappfirestore.interfaces.DishesListener;
 import com.example.employeerestaurantappfirestore.model.ModelDishes;
 import com.example.employeerestaurantappfirestore.model.ModelDishesQuantity;
-import com.example.employeerestaurantappfirestore.model.ModelOrder;
-import com.google.firebase.firestore.DocumentReference;
 
 import java.util.List;
 
 public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder>{
     private List<ModelDishes> dishesList;
-    private DishesDialog dishesDialog;
     private List<ModelDishesQuantity> dishesQuantityList;
     private final DishesListener dishesListener;
 
-    public DishAdapter(List<ModelDishes> dishesList, DishesDialog dishesDialog, List<ModelDishesQuantity> dishesQuantityList, DishesListener listener) {
+    public DishAdapter(List<ModelDishes> dishesList, List<ModelDishesQuantity> dishesQuantityList, DishesListener listener) {
         this.dishesList = dishesList;
-        this.dishesDialog = dishesDialog;
         this.dishesQuantityList = dishesQuantityList;
         this.dishesListener = listener;
     }
@@ -101,12 +93,8 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder>{
                 dishesListener.onAddButtonClick(dishesQuantity);
             }
         });
-        viewHolder.ll_plus_btn.setOnClickListener(view -> {
-            dishesListener.onPlusButtonClick(dishes.getId());
-        });
-        viewHolder.ll_minus_btn.setOnClickListener(view -> {
-            dishesListener.onMinusButtonClick(dishes.getId());
-        });
+        viewHolder.ll_plus_btn.setOnClickListener(view -> dishesListener.onPlusButtonClick(dishes.getId()));
+        viewHolder.ll_minus_btn.setOnClickListener(view -> dishesListener.onMinusButtonClick(dishes.getId()));
         viewHolder.et_count.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

@@ -18,7 +18,6 @@ import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
 import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
-import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.google.firebase.firestore.DocumentReference;
 

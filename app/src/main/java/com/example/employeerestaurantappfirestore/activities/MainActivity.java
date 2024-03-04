@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         fragmentTransaction.commit();
         iv_back.setVisibility(View.GONE);
         if(getResources().getConfiguration().smallestScreenWidthDp < 600){
-            showMenu();
+            showMenu();//При нажатии во время скрытия не срабатывает
         }
     }
 
@@ -222,14 +222,16 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
     @Override
     public void onOrderItemClicked(String orderId) {
         updateMenuUI(ll_orders, "Заказ");
-        loadDefaultFragment(OrderFragment.newInstance(orderId));
+        OrderFragment orderFragment =OrderFragment.newInstance(orderId);
+        loadDefaultFragment(orderFragment);
         orderBack();
     }
 
     @Override
     public void onNewItemClicked() {
         updateMenuUI(ll_orders, "Заказ");
-        loadDefaultFragment(OrderFragment.newInstance(null));
+        OrderFragment orderFragment = OrderFragment.newInstance(null);
+        loadDefaultFragment(orderFragment);
         orderBack();
     }
 
