@@ -71,6 +71,7 @@ public class DishesDialog extends Dialog implements DishesListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_adding_dishes);
+        setCanceledOnTouchOutside(false);
 
         // Получение ширины экрана
         DisplayMetrics displayMetrics = new DisplayMetrics();
