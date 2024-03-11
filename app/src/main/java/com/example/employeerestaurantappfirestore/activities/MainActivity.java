@@ -23,16 +23,18 @@ import android.widget.TextView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
+import com.example.employeerestaurantappfirestore.fragments.TableFragment;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
 import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
+import com.example.employeerestaurantappfirestore.interfaces.OnTableItemClickListener;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.example.employeerestaurantappfirestore.utils.WakeLockManager;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements OnScrollListener, OnOrderItemClickListener {
+public class MainActivity extends AppCompatActivity implements OnScrollListener, OnOrderItemClickListener, OnTableItemClickListener {
     private FirebaseAuth mAuth;
     private LinearLayout ll_orders, ll_tables, ll_user;
     private TextView tv_title;
@@ -243,4 +245,10 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         });
     }
 
+    @Override
+    public void onTableItemClicked(String tableId) {
+        updateMenuUI(ll_tables, "Стол");
+        TableFragment tableFragment = TableFragment.newInstance(tableId);
+        loadDefaultFragment(tableFragment);
+    }
 }

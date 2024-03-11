@@ -1,6 +1,7 @@
 package com.example.employeerestaurantappfirestore.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -16,7 +17,11 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.activities.MainActivity;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
+import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
+import com.example.employeerestaurantappfirestore.interfaces.OnTableItemClickListener;
+import com.example.employeerestaurantappfirestore.managers.TableManager;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -25,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
+    private OnTableItemClickListener listener;
     List<ModelTableList> modelTableList;
     TablesFragment tablesFragment;
 
@@ -82,6 +88,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
             circleBackground = ContextCompat.getDrawable(tablesFragment.requireContext(), R.drawable.circle_background);
         }
 
+
         viewHolder.ll_call_status.setBackground(circleBackground);
         viewHolder.ll_call_status.setOnClickListener(view -> changCallStatus(table));
         viewHolder.rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
@@ -95,6 +102,13 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
             }
             // Обновление значения idTableStatus в объекте table
             updateTableStatus(table, newIdTableStatus);
+        });
+        viewHolder.ll_table_info.setOnClickListener(view -> {
+            Context context = tablesFragment.getContext();
+            if (context instanceof MainActivity) {
+                listener = (OnTableItemClickListener) context;
+                listener.onTableItemClicked(table.getTableId());
+            }
         });
     }
 
@@ -157,7 +171,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         TextView tv_number_of_seats, tv_table;
-        LinearLayout ll_call_status;
+        LinearLayout ll_call_status, ll_table_info;
         RadioGroup rg_table_status;
         public ViewHolder(@NonNull View itemView){
             super(itemView);
@@ -165,6 +179,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
             tv_table = itemView.findViewById(R.id.tv_table);
             ll_call_status = itemView.findViewById(R.id.ll_call_status);
             rg_table_status = itemView.findViewById(R.id.rg_table_status);
+            ll_table_info = itemView.findViewById(R.id.ll_table_info);
         }
     }
 }
