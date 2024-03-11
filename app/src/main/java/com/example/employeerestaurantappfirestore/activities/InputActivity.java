@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 
 public class InputActivity extends AppCompatActivity {
     EditText et_email;
@@ -34,9 +35,7 @@ public class InputActivity extends AppCompatActivity {
         te_password = findViewById(R.id.et_password);
         btn_login = findViewById(R.id.btn_login);
         mAuth = FirebaseAuth.getInstance();
-        btn_login.setOnClickListener(view -> {
-            loginUser();
-        });
+        btn_login.setOnClickListener(view -> loginUser());
     }
 
     private void loginUser(){
@@ -47,17 +46,25 @@ public class InputActivity extends AppCompatActivity {
         }
         else{
             mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                Log.d("FirebaseAuth", "signInWithEmail:success");
-                                startActivities(new Intent[]{new Intent(InputActivity.this, MainActivity.class)});
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("FirebaseAuth", "signInWithEmail:success");
+                            startActivities(new Intent[]{new Intent(InputActivity.this, MainActivity.class)});
+                        } else {
+                            Log.w("FirebaseAuth", "signInWithEmail:failure", task.getException());
+                            if (task.getException() instanceof FirebaseAuthException) {
+                                FirebaseAuthException authException = (FirebaseAuthException) task.getException();
+                                String errorCode = authException.getErrorCode();
+                                Log.w("FirebaseAuth-errorCode", errorCode);
+                                if (errorCode.equals("ERROR_INVALID_EMAIL")) {
+                                    Toast.makeText(InputActivity.this, "Неправильный формат адреса электронной почты.", Toast.LENGTH_SHORT).show();
+                                } else if (errorCode.equals("ERROR_INVALID_CREDENTIAL")) {
+                                    Toast.makeText(InputActivity.this, "Неправильный логин или пароль.", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(InputActivity.this, "Ошибка аутентификации: " + errorCode, Toast.LENGTH_SHORT).show();
+                                }
                             } else {
-                                Log.w("FirebaseAuth", "signInWithEmail:failure", task.getException());
-                                Toast.makeText(InputActivity.this, "Authentication failed.",
-                                        Toast.LENGTH_SHORT).show();
-
+                                Toast.makeText(InputActivity.this, "Ошибка аутентификации.", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
