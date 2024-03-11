@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -19,9 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
@@ -49,7 +46,6 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
         } else {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table_smart, viewGroup, false);
         }
-//        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_table, viewGroup, false);
         return new ViewHolder(v);
     }
     @SuppressLint({"SetTextI18n"})

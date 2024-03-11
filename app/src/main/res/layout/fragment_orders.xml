@@ -19,18 +19,22 @@
         android:padding="5dp"
         android:orientation="horizontal">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_orders"
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nsv_order"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:numColumns="auto_fit"
-            android:stretchMode="columnWidth" />
+            android:layout_height="match_parent">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_orders"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:numColumns="auto_fit"
+                android:stretchMode="columnWidth" />
+        </androidx.core.widget.NestedScrollView>
 
         <RelativeLayout
             android:id="@+id/rl_orders_not_found"
             android:layout_width="match_parent"
             android:visibility="gone"
-            android:layout_centerInParent="true"
             android:layout_height="match_parent">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -75,6 +79,21 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="end"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="-5dp">
+                <TextView
+                    android:id="@+id/tv_clear_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Сбросить"
+                    android:textColor="@drawable/text_color_selector"
+                    android:textSize="15sp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="start"
                 android:orientation="horizontal"
                 android:paddingStart="2dp">
@@ -115,16 +134,25 @@
             </LinearLayout>
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btn_added_order"
+
+        <LinearLayout
+            android:id="@+id/ll_btn_added_order"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/rounded_button"
-            android:text="Новый заказ"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textAllCaps="false"/>
+            android:background="@drawable/selector_background_order_save"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Новый заказ"
+                android:textAllCaps="false"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+        </LinearLayout>
 
         <LinearLayout
             android:visibility="gone"

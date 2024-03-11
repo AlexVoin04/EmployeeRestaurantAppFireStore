@@ -24,11 +24,16 @@
 
             <ImageView
                 android:id="@+id/iv_back"
+                android:visibility="gone"
                 android:layout_width="30dp"
+                android:padding="3dp"
                 android:layout_height="match_parent"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_arrow_back" />
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="@drawable/selector_background"/>
 
             <TextView
                 android:id="@+id/tv_title"
@@ -48,8 +53,7 @@
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"
-                android:background="@drawable/selector_background">
+                android:layout_alignParentEnd="true">
 
                 <ImageView
                     android:id="@+id/iv_menu_selector"

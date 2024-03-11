@@ -2,11 +2,9 @@ package com.example.employeerestaurantappfirestore.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.example.employeerestaurantappfirestore.model.ModelTablesData;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -15,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class TablesDialog {
     public static void initTablesSelectBuilder(Context context, String[] tableArray,
@@ -46,20 +43,18 @@ public class TablesDialog {
                 onSelectionCompleted.run();
             }
         });
-        builder.setNegativeButton("Отмена", (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
-        builder.setNeutralButton("Все столы", (dialogInterface, i) -> {
-            for (int j = 0; j < selectedTables.length; j++) {
-                selectedTables[j] = false;
-                tableList.clear();
-                tv_tables_select.setText("");
-                if (onSelectionCompleted != null) {
-                    onSelectionCompleted.run();
-                }
-            }
-        });
+        builder.setNegativeButton("Отмена", (dialogInterface, i) -> dialogInterface.dismiss());
+        builder.setNeutralButton("Все столы", (dialogInterface, i) -> clearAll(selectedTables, tableList, tv_tables_select, onSelectionCompleted));
         builder.show();
+    }
+
+    public static void clearAll(boolean[] selectedTables, ArrayList<Integer> tableList, TextView tv_tables_select, Runnable onSelectionCompleted){
+        Arrays.fill(selectedTables, false);
+        tableList.clear();
+        tv_tables_select.setText("");
+        if (onSelectionCompleted != null) {
+            onSelectionCompleted.run();
+        }
     }
 
     public static void getTables(FirebaseFirestore fireStore, OnTablesLoadedListener listener) {
@@ -85,12 +80,11 @@ public class TablesDialog {
         void onTablesLoadFailed(Exception e);
     }
 
-    public static String[] sortTablesDialog(String[] tableArray){
+    public static void sortTablesDialog(String[] tableArray){
         Comparator<String> numericStringComparator = Comparator.comparingInt(Integer::parseInt);
 
         // Сортировка массива строк с использованием компаратора
         Arrays.sort(tableArray, numericStringComparator);
 
-        return tableArray;
     }
 }

@@ -21,8 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.fragments.OrderFragment;
 import com.example.employeerestaurantappfirestore.fragments.OrdersFragment;
 import com.example.employeerestaurantappfirestore.fragments.TablesFragment;
+import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
 import com.example.employeerestaurantappfirestore.interfaces.OnScrollListener;
 import com.example.employeerestaurantappfirestore.utils.NetworkUtils;
 import com.example.employeerestaurantappfirestore.utils.WakeLockManager;
@@ -30,13 +32,12 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-
-public class MainActivity extends AppCompatActivity implements OnScrollListener{
+public class MainActivity extends AppCompatActivity implements OnScrollListener, OnOrderItemClickListener {
     private FirebaseAuth mAuth;
     private LinearLayout ll_orders, ll_tables, ll_user;
     private TextView tv_title;
     private ConstraintLayout cl_menu;
-    private ImageView iv_menu_selector;
+    private ImageView iv_menu_selector, iv_back;
 
     @SuppressLint({"MissingInflatedId", "UseCompatLoadingForDrawables"})
     @Override
@@ -68,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
                 updateMenuUI(ll_tables, "Столы");
                 loadDefaultFragment(currentFragment);
             }
+            if (currentFragment instanceof OrderFragment){
+                orderBack();
+            }
 
         }
     }
@@ -98,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         ll_user = findViewById(R.id.ll_user);
         tv_title = findViewById(R.id.tv_title);
         iv_menu_selector = findViewById(R.id.iv_menu_selector);
+        iv_back = findViewById(R.id.iv_back);
     }
 
     private void initListeners(){
@@ -130,8 +135,12 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
     private void loadDefaultFragment(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fcv_fragment, fragment);
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+//        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.commit();
+        iv_back.setVisibility(View.GONE);
+        if(getResources().getConfiguration().smallestScreenWidthDp < 600){
+            showMenu();//При нажатии во время скрытия не срабатывает
+        }
     }
 
     private void updateMenuUI(View selectedView, String titleText) {
@@ -154,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         if(cl_menu.getVisibility() != View.VISIBLE){
             cl_menu.setVisibility(View.VISIBLE);
             TranslateAnimation animate = new TranslateAnimation(0, 0, cl_menu.getHeight(), 0);
-            // duration of animation
             animate.setDuration(500);
             animate.setFillAfter(true);
             cl_menu.startAnimation(animate);
@@ -166,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         if(cl_menu.getVisibility() != View.GONE){
             TranslateAnimation animate = new TranslateAnimation(0, 0, 0, cl_menu.getHeight()+100);
             animate.setDuration(500);
-
             animate.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
@@ -211,4 +218,29 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener{
         super.onDestroy();
         WakeLockManager.release();
     }
+
+    @Override
+    public void onOrderItemClicked(String orderId) {
+        updateMenuUI(ll_orders, "Заказ");
+        OrderFragment orderFragment =OrderFragment.newInstance(orderId);
+        loadDefaultFragment(orderFragment);
+        orderBack();
+    }
+
+    @Override
+    public void onNewItemClicked() {
+        updateMenuUI(ll_orders, "Заказ");
+        OrderFragment orderFragment = OrderFragment.newInstance(null);
+        loadDefaultFragment(orderFragment);
+        orderBack();
+    }
+
+    private void orderBack(){
+        iv_back.setVisibility(View.VISIBLE);
+        iv_back.setOnClickListener(view -> {
+            updateMenuUI(ll_orders, "Заказы");
+            loadDefaultFragment(new OrdersFragment());
+        });
+    }
+
 }
