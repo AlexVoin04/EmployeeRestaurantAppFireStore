@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
@@ -25,10 +24,9 @@ import android.widget.TextView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.managers.TableManager;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.Objects;
 
@@ -52,7 +50,7 @@ public class TableFragment extends Fragment {
     private FirebaseFirestore db;
     private String id;
     private ModelTableList table;
-
+    private ListenerRegistration snapshotListenerRegistration;
     public TableFragment() {
         // Required empty public constructor
     }
@@ -103,7 +101,7 @@ public class TableFragment extends Fragment {
     }
 
     private void getTable(){
-        db.collection("Tables").document(id)
+        snapshotListenerRegistration = db.collection("Tables").document(id)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null) {
                         Log.w(TAG, "Listen failed.", e);
@@ -119,6 +117,34 @@ public class TableFragment extends Fragment {
                     } else {
                         Log.d(TAG, "Current data: null");
                     }
+                });
+    }
+
+    private void updateTableStatus(String tableId, String newIdTableStatus) {
+        // Удаляем подписку на изменения, чтобы временно отключить onSnapshotListener
+        if (snapshotListenerRegistration != null) {
+            snapshotListenerRegistration.remove();
+        }
+
+        DocumentReference tableReference = db
+                .collection("Tables")
+                .document(tableId);
+
+        DocumentReference tableStatusReference = db
+                .collection("TableStatus")
+                .document(newIdTableStatus);
+
+        tableReference.update("idTableStatus", tableStatusReference)
+                .addOnCompleteListener(updateTask -> {
+                    if (updateTask.isSuccessful()) {
+                        Log.d("FireStore", "Статус стола "+tableId+" обновлен: " + tableStatusReference.getId());
+                    } else {
+                        Exception e = updateTask.getException();
+                        if (e != null) {
+                            Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                        }
+                    }
+                    getTable();
                 });
     }
 
@@ -156,18 +182,18 @@ public class TableFragment extends Fragment {
     private void initListeners(){
         TableManager tableManager = new TableManager();
         ll_call_status.setOnClickListener(view -> tableManager.changCallStatus(table));
-//        rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
-//            String newIdTableStatus = "1";
-//            if (checkedId == R.id.rBtnFree) {
-//                newIdTableStatus = "1";
-//            } else if (checkedId == R.id.rBtnOccupied) {
-//                newIdTableStatus = "2";
-//            } else if (checkedId == R.id.rBtnReserved) {
-//                newIdTableStatus = "3";
-//            }
-//            // Обновление значения idTableStatus в объекте table
-//            tableManager.updateTableStatus(table.getTableId(), newIdTableStatus);
-//        });
+        rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
+            String newIdTableStatus = "1";
+            if (checkedId == R.id.rBtnFree) {
+                newIdTableStatus = "1";
+            } else if (checkedId == R.id.rBtnOccupied) {
+                newIdTableStatus = "2";
+            } else if (checkedId == R.id.rBtnReserved) {
+                newIdTableStatus = "3";
+            }
+            // Обновление значения idTableStatus в объекте table
+            updateTableStatus(table.getTableId(), newIdTableStatus);
+        });
     }
     private void initViews(){
         context = getContext();
