@@ -3,6 +3,7 @@ package com.example.employeerestaurantappfirestore.fragments;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -15,23 +16,23 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
-import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
 import com.example.employeerestaurantappfirestore.adapters.ReservationAdapter;
-import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
 import com.example.employeerestaurantappfirestore.dialogs.ReservationDialog;
 import com.example.employeerestaurantappfirestore.managers.TableManager;
-import com.example.employeerestaurantappfirestore.model.ModelOrderList;
 import com.example.employeerestaurantappfirestore.model.ModelReservationsList;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
+import com.example.employeerestaurantappfirestore.utils.Animations;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -39,7 +40,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,22 +52,21 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class TableFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private View view;
     private Context context;
     private static final String ARG_TABLE = "tableId";
-    private TextView tv_table, tv_number_of_seats;
+    private TextView tv_table, tv_number_of_seats, tv_selected_date;
     private RadioGroup rg_table_status;
     private LinearLayout ll_call_status, ll_before_date, ll_next_date, ll_btn_added_reservation;
-    private NestedScrollView nsv_dish;
+    private NestedScrollView nsv_reservation;
     private RecyclerView rv_reservations;
     private FirebaseFirestore db;
     private String id;
     private ModelTableList table;
     private ListenerRegistration snapshotListenerRegistration;
     private List<ModelReservationsList> reservationsList;
+    private final Calendar dateAndTime = Calendar.getInstance();
+    private RelativeLayout rl_reservations_not_found;
     public TableFragment() {
         // Required empty public constructor
     }
@@ -76,7 +78,7 @@ public class TableFragment extends Fragment {
      * @param tableId Parameter 1.
      * @return A new instance of fragment TableFragment.
      */
-    // TODO: Rename and change types and number of parameters
+
     public static TableFragment newInstance(String tableId) {
         TableFragment fragment = new TableFragment();
         Bundle args = new Bundle();
@@ -104,7 +106,7 @@ public class TableFragment extends Fragment {
         } else {
             view = inflater.inflate(R.layout.fragment_table_smart, container, false);
             initViews();
-//            Animations.smartScroll(context, nsv_dish);
+            Animations.smartScroll(context, nsv_reservation);
         }
         initListeners();
         if(id!=null){
@@ -218,12 +220,43 @@ public class TableFragment extends Fragment {
             ReservationDialog reservationDialog = new ReservationDialog(requireContext(), table.getTableId());
             reservationDialog.show();
         });
+        DatePickerDialog.OnDateSetListener d = (view, year, monthOfYear, dayOfMonth) -> {
+            dateAndTime.set(Calendar.YEAR, year);
+            dateAndTime.set(Calendar.MONTH, monthOfYear);
+            dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            setInitialDateTime();
+            getReservations();
+        };
+        tv_selected_date.setOnClickListener(view -> {
+            new DatePickerDialog(context, d,
+                    dateAndTime.get(Calendar.YEAR),
+                    dateAndTime.get(Calendar.MONTH),
+                    dateAndTime.get(Calendar.DAY_OF_MONTH))
+                    .show();
+        });
+        ll_before_date.setOnClickListener(view1 -> {
+            dateAndTime.add(Calendar.DAY_OF_MONTH, -1);
+            setInitialDateTime();
+            getReservations();
+        });
+        ll_next_date.setOnClickListener(view1 -> {
+            dateAndTime.add(Calendar.DAY_OF_MONTH, 1);
+            setInitialDateTime();
+            getReservations();
+        });
+    }
+
+    private void setStatusVisible(int status1, int status2){
+        rl_reservations_not_found.setVisibility(status1);
+        nsv_reservation.setVisibility(status2);
     }
 
     private void getReservations(){
         int scrollY = rv_reservations.getScrollY();
         CollectionReference reservationsCollectionRef = db.collection("Reservations");
-        reservationsCollectionRef.addSnapshotListener(((value, error) -> {
+        DocumentReference tableRef = db.collection("Tables").document(table.getTableId());
+        reservationsCollectionRef.whereEqualTo("idTable", tableRef)
+                .addSnapshotListener(((value, error) -> {
             if (error != null) {
                 Log.e("Firestore", "Error getting documents: ", error);
                 return;
@@ -236,25 +269,48 @@ public class TableFragment extends Fragment {
                     modelReservationsList.setReservationId(document.getId());
                     reservationsList.add(modelReservationsList);
                 }
+                filterReservationsByDate(dateAndTime);
                 reservationsList.sort(Comparator.comparing(ModelReservationsList::getDateTime));
                 initAdapter();
+                if(reservationsList.size()==0){
+                    setStatusVisible(View.VISIBLE, View.GONE);
+                }else {
+                    setStatusVisible(View.GONE, View.VISIBLE);
+                }
                 rv_reservations.scrollToPosition(scrollY);
             }
         }));
     }
+
+    private void filterReservationsByDate(Calendar calendar) {
+        // Проверяем, совпадает ли дата в элементе списка с calendar
+        // Если дата не совпадает, удаляем элемент из списка
+        reservationsList.removeIf(reservation -> !isSameDate(reservation.getDateTime(), calendar));
+    }
+    private boolean isSameDate(Date timestamp, Calendar calendar) {
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(timestamp);
+        return cal1.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+                cal1.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) &&
+                cal1.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH);
+    }
+
     private void initViews(){
         context = getContext();
         tv_table = view.findViewById(R.id.tv_table);
+        tv_selected_date = view.findViewById(R.id.tv_selected_date);
         tv_number_of_seats = view.findViewById(R.id.tv_number_of_seats);
         rg_table_status = view.findViewById(R.id.rg_table_status);
         ll_call_status = view.findViewById(R.id.ll_call_status);
         ll_before_date = view.findViewById(R.id.ll_before_date);
         ll_next_date = view.findViewById(R.id.ll_next_date);
-        nsv_dish = view.findViewById(R.id.nsv_dish);
+        nsv_reservation = view.findViewById(R.id.nsv_reservation);
         rv_reservations = view.findViewById(R.id.rv_reservations);
         rv_reservations.setLayoutManager(new GridLayoutManager(context, 1));
         rv_reservations.setHasFixedSize(true);
         ll_btn_added_reservation = view.findViewById(R.id.ll_btn_added_reservation);
+        rl_reservations_not_found = view.findViewById(R.id.rl_reservations_not_found);
+        setInitialDateTime();
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -262,5 +318,12 @@ public class TableFragment extends Fragment {
         ReservationAdapter reservationAdapter = new ReservationAdapter(reservationsList, TableFragment.this);
         reservationAdapter.notifyDataSetChanged();
         rv_reservations.setAdapter(reservationAdapter);
+    }
+
+    private void setInitialDateTime() {
+        tv_selected_date.setText(DateUtils.formatDateTime(context,
+                dateAndTime.getTimeInMillis(),
+                DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR
+        ));
     }
 }

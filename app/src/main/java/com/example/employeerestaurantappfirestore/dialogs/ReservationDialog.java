@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -19,6 +20,7 @@ import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickLis
 import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelReservations;
 import com.example.employeerestaurantappfirestore.model.ModelReservationsList;
+import com.example.employeerestaurantappfirestore.utils.Animations;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -49,7 +51,12 @@ public class ReservationDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dialog_adding_reservation);
+        Configuration config = context.getResources().getConfiguration();
+        if (config.smallestScreenWidthDp >= 600) {
+            setContentView(R.layout.dialog_adding_reservation);
+        } else {
+            setContentView(R.layout.dialog_adding_reservation_smart);
+        }
         setCanceledOnTouchOutside(false);
         initViews();
         fireStore = FirebaseFirestore.getInstance();

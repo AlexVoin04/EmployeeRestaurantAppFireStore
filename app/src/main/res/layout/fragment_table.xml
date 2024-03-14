@@ -190,7 +190,7 @@
                 </LinearLayout>
             </LinearLayout>
             <androidx.core.widget.NestedScrollView
-                android:id="@+id/nsv_dish"
+                android:id="@+id/nsv_reservation"
                 android:layout_margin="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -201,6 +201,32 @@
                     android:numColumns="auto_fit"
                     android:stretchMode="columnWidth" />
             </androidx.core.widget.NestedScrollView>
+            <RelativeLayout
+                android:id="@+id/rl_reservations_not_found"
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_centerInParent="true"
+                android:layout_height="match_parent">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_centerInParent="true"
+                    android:gravity="center">
+                    <ImageView
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
+                        android:src="@drawable/ic_reservations_not_found"
+                        />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30dp"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:gravity="center"
+                        android:text="Брони отсутствуют"/>
+                </LinearLayout>
+            </RelativeLayout>
             <LinearLayout
                 android:id="@+id/ll_btn_added_reservation"
                 android:layout_margin="5dp"
