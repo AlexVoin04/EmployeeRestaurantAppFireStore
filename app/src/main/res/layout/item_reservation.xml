@@ -3,73 +3,167 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="5dp"
-    android:stretchColumns="5"
+    android:stretchColumns="0,1,2,3,4,5"
     android:background="@drawable/button_back_stroke_white">
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical">
-        <TextView
-            android:layout_height="match_parent"
-            android:id="@+id/tv_time"
-            android:text="13:35"
-            android:gravity="center"
-            android:ems="5"
-            android:textSize="16sp"
-            android:layout_margin="2dp"
-            android:textColor="@color/white"/>
-        <TextView
-            android:layout_height="match_parent"
-            android:id="@+id/tv_name"
-            android:text="Иван"
-            android:gravity="center"
-            android:ems="10"
-            android:textSize="16sp"
-            android:layout_margin="2dp"
-            android:textColor="@color/white"/>
-        <TextView
-            android:layout_height="match_parent"
-            android:id="@+id/tv_telephone"
-            android:text="89134567859"
-            android:gravity="center"
-            android:ems="8"
-            android:textSize="16sp"
-            android:layout_margin="2dp"
-            android:textColor="@color/white"/>
-        <TextView
-            android:layout_height="match_parent"
-            android:id="@+id/tv_persons"
-            android:text="4"
-            android:gravity="center"
-            android:ems="3"
-            android:textSize="16sp"
-            android:layout_margin="2dp"
-            android:textColor="@color/white"/>
-        <TextView
-            android:layout_height="match_parent"
-            android:id="@+id/tv_time_of_stay"
-            android:text="60"
-            android:gravity="center"
-            android:ems="5"
-            android:textSize="16sp"
-            android:layout_margin="2dp"
-            android:textColor="@color/white"/>
-    <LinearLayout
-        android:gravity="end">
         <LinearLayout
-            android:id="@+id/ll_btn_delete_reservation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:background="@drawable/selector_background_dish_del"
-            android:padding="0dp">
-            <ImageView
-                android:layout_width="23dp"
-                android:layout_height="23dp"
-                android:padding="5dp"
-                android:src="@drawable/ic_delete"/>
+            android:layout_height="match_parent">
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:text="Время:"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_time"
+                android:text="13:35"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:layout_marginStart="2dp"
+                android:textColor="@color/white"/>
+            <View
+                android:layout_marginStart="5dp"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_gravity=""
+                android:background="@color/white" />
         </LinearLayout>
-    </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp">
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:text="Имя:"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_name"
+                android:text="Иван"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:layout_marginStart="2dp"
+                android:textColor="@color/white"/>
+            <View
+                android:layout_marginStart="5dp"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp">
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:text="Номер:"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_telephone"
+                android:text="89134567859"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:layout_marginStart="2dp"
+                android:textColor="@color/white"/>
+            <View
+                android:layout_marginStart="5dp"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp">
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:text="Персон:"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_persons"
+                android:text="4"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:layout_marginStart="2dp"
+                android:textColor="@color/white"/>
+            <View
+                android:layout_marginStart="5dp"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp">
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:text="Номер:"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
+            <TextView
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:id="@+id/tv_time_of_stay"
+                android:text="60"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:layout_marginStart="2dp"
+                android:textColor="@color/white"/>
+            <View
+                android:layout_marginStart="5dp"
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:gravity="end">
+            <LinearLayout
+                android:id="@+id/ll_btn_delete_reservation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:background="@drawable/selector_background_dish_del"
+                android:padding="0dp">
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_delete"/>
+            </LinearLayout>
+        </LinearLayout>
     </TableRow>
 </TableLayout>

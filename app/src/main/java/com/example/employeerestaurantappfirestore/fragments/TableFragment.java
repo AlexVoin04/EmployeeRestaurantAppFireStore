@@ -102,7 +102,7 @@ public class TableFragment extends Fragment {
             view = inflater.inflate(R.layout.fragment_table, container, false);
             initViews();
         } else {
-            view = inflater.inflate(R.layout.fragment_table, container, false);
+            view = inflater.inflate(R.layout.fragment_table_smart, container, false);
             initViews();
 //            Animations.smartScroll(context, nsv_dish);
         }

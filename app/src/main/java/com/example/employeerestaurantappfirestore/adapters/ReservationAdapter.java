@@ -41,7 +41,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         if (config.smallestScreenWidthDp >= 600) {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_reservation, viewGroup, false);
         } else {
-            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_reservation, viewGroup, false);
+            v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_reservation_smart, viewGroup, false);
         }
         return new ViewHolder(v);
     }
