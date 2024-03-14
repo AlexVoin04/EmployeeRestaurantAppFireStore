@@ -2,6 +2,7 @@ package com.example.employeerestaurantappfirestore.fragments;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -22,12 +24,23 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.example.employeerestaurantappfirestore.R;
+import com.example.employeerestaurantappfirestore.adapters.OrderAdapter;
+import com.example.employeerestaurantappfirestore.adapters.ReservationAdapter;
+import com.example.employeerestaurantappfirestore.dialogs.DishesDialog;
+import com.example.employeerestaurantappfirestore.dialogs.ReservationDialog;
 import com.example.employeerestaurantappfirestore.managers.TableManager;
+import com.example.employeerestaurantappfirestore.model.ModelOrderList;
+import com.example.employeerestaurantappfirestore.model.ModelReservationsList;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -51,6 +64,7 @@ public class TableFragment extends Fragment {
     private String id;
     private ModelTableList table;
     private ListenerRegistration snapshotListenerRegistration;
+    private List<ModelReservationsList> reservationsList;
     public TableFragment() {
         // Required empty public constructor
     }
@@ -113,6 +127,8 @@ public class TableFragment extends Fragment {
                         if (table != null) {
                             table.setTableId(snapshot.getId());
                             getTableData();
+                            reservationsList = new ArrayList<>();
+                            getReservations();
                         }
                     } else {
                         Log.d(TAG, "Current data: null");
@@ -124,6 +140,10 @@ public class TableFragment extends Fragment {
         // Удаляем подписку на изменения, чтобы временно отключить onSnapshotListener
         if (snapshotListenerRegistration != null) {
             snapshotListenerRegistration.remove();
+        }
+        if (newIdTableStatus.equals(table.getIdTableStatus().getId())) {
+            getTable();
+            return;
         }
 
         DocumentReference tableReference = db
@@ -181,19 +201,46 @@ public class TableFragment extends Fragment {
 
     private void initListeners(){
         TableManager tableManager = new TableManager();
-        ll_call_status.setOnClickListener(view -> tableManager.changCallStatus(table));
-        rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
-            String newIdTableStatus = "1";
-            if (checkedId == R.id.rBtnFree) {
-                newIdTableStatus = "1";
-            } else if (checkedId == R.id.rBtnOccupied) {
-                newIdTableStatus = "2";
-            } else if (checkedId == R.id.rBtnReserved) {
-                newIdTableStatus = "3";
-            }
-            // Обновление значения idTableStatus в объекте table
-            updateTableStatus(table.getTableId(), newIdTableStatus);
+//        ll_call_status.setOnClickListener(view -> tableManager.changCallStatus(table));
+//        rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
+//            String newIdTableStatus = "1";
+//            if (checkedId == R.id.rBtnFree) {
+//                newIdTableStatus = "1";
+//            } else if (checkedId == R.id.rBtnOccupied) {
+//                newIdTableStatus = "2";
+//            } else if (checkedId == R.id.rBtnReserved) {
+//                newIdTableStatus = "3";
+//            }
+//            // Обновление значения idTableStatus в объекте table
+//            updateTableStatus(id, newIdTableStatus);
+//        });
+        ll_btn_added_reservation.setOnClickListener(view1 -> {
+            ReservationDialog reservationDialog = new ReservationDialog(requireContext(), table.getTableId());
+            reservationDialog.show();
         });
+    }
+
+    private void getReservations(){
+        int scrollY = rv_reservations.getScrollY();
+        CollectionReference reservationsCollectionRef = db.collection("Reservations");
+        reservationsCollectionRef.addSnapshotListener(((value, error) -> {
+            if (error != null) {
+                Log.e("Firestore", "Error getting documents: ", error);
+                return;
+            }
+            if (value != null){
+                reservationsList.clear();
+                for (DocumentSnapshot document : value) {
+                    ModelReservationsList modelReservationsList = document.toObject(ModelReservationsList.class);
+                    assert modelReservationsList != null;
+                    modelReservationsList.setReservationId(document.getId());
+                    reservationsList.add(modelReservationsList);
+                }
+                reservationsList.sort(Comparator.comparing(ModelReservationsList::getDateTime));
+                initAdapter();
+                rv_reservations.scrollToPosition(scrollY);
+            }
+        }));
     }
     private void initViews(){
         context = getContext();
@@ -205,6 +252,15 @@ public class TableFragment extends Fragment {
         ll_next_date = view.findViewById(R.id.ll_next_date);
         nsv_dish = view.findViewById(R.id.nsv_dish);
         rv_reservations = view.findViewById(R.id.rv_reservations);
+        rv_reservations.setLayoutManager(new GridLayoutManager(context, 1));
+        rv_reservations.setHasFixedSize(true);
         ll_btn_added_reservation = view.findViewById(R.id.ll_btn_added_reservation);
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void initAdapter(){
+        ReservationAdapter reservationAdapter = new ReservationAdapter(reservationsList, TableFragment.this);
+        reservationAdapter.notifyDataSetChanged();
+        rv_reservations.setAdapter(reservationAdapter);
     }
 }

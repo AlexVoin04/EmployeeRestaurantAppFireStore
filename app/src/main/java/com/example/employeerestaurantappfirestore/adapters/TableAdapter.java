@@ -113,6 +113,10 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.ViewHolder>{
     }
 
     private void updateTableStatus(ModelTableList table, String newIdTableStatus) {
+        if (newIdTableStatus.equals(table.getIdTableStatus().getId())) {
+            // Новое значение совпадает с текущим, ничего не делаем
+            return;
+        }
         DocumentReference tableReference = FirebaseFirestore.getInstance()
                 .collection("Tables")
                 .document(table.getTableId());

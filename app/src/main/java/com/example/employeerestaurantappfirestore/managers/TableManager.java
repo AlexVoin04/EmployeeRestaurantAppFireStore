@@ -13,10 +13,14 @@ public class TableManager {
     public TableManager() {
         firestore = FirebaseFirestore.getInstance();
     }
-    public void updateTableStatus(String tableId, String newIdTableStatus) {
+    public void updateTableStatus(ModelTableList table, String newIdTableStatus) {
+        if (newIdTableStatus.equals(table.getIdTableStatus().getId())) {
+            // Новое значение совпадает с текущим, ничего не делаем
+            return;
+        }
         DocumentReference tableReference = firestore
                 .collection("Tables")
-                .document(tableId);
+                .document(table.getTableId());
 
         DocumentReference tableStatusReference = firestore
                 .collection("TableStatus")
@@ -25,7 +29,7 @@ public class TableManager {
         tableReference.update("idTableStatus", tableStatusReference)
                 .addOnCompleteListener(updateTask -> {
                     if (updateTask.isSuccessful()) {
-                        Log.d("FireStore", "Статус стола "+tableId+" обновлен: " + tableStatusReference.getId());
+                        Log.d("FireStore", "Статус стола "+table.getTableId()+" обновлен: " + tableStatusReference.getId());
                     } else {
                         Exception e = updateTask.getException();
                         if (e != null) {
