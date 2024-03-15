@@ -15,17 +15,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.example.employeerestaurantappfirestore.R;
-import com.example.employeerestaurantappfirestore.activities.MainActivity;
-import com.example.employeerestaurantappfirestore.interfaces.OnOrderItemClickListener;
-import com.example.employeerestaurantappfirestore.model.ModelOrder;
 import com.example.employeerestaurantappfirestore.model.ModelReservations;
-import com.example.employeerestaurantappfirestore.model.ModelReservationsList;
-import com.example.employeerestaurantappfirestore.utils.Animations;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.core.View;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,26 +109,62 @@ public class ReservationDialog extends Dialog {
         DocumentReference tableReference = fireStore.collection("Tables").document(idTable);
         int persons = Integer.parseInt(et_reserv_persons.getText().toString().trim());
         int timeOfStay = Integer.parseInt(et_reserv_time_of_seats.getText().toString().trim());
-        ModelReservations modelReservations = new ModelReservations(
-                dateAndTime.getTime(),
-                et_reserv_name.getText().toString().trim(),
-                et_reserv_telephone.getText().toString().trim(),
-                persons,
-                timeOfStay,
-                tableReference
-        );
-        reservationsCollection.add(modelReservations)
+        Calendar endDateTime = (Calendar) dateAndTime.clone();
+        endDateTime.add(Calendar.MINUTE, timeOfStay);
+
+        reservationsCollection.whereEqualTo("idTable", tableReference)
+                .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Snackbar.make(ll_btn_added_reserv, "Бронь добавлена", Snackbar.LENGTH_SHORT).show();
-                        dismiss();
-                    } else {
+                        if (!isTimeSlotAvailable(task.getResult().toObjects(ModelReservations.class), dateAndTime, endDateTime)) {
+                            Snackbar.make(ll_btn_added_reserv, "Время бронирования пересекается с существующим", Snackbar.LENGTH_SHORT).show();
+                            return; // Завершить метод, не добавляя бронирование
+                        }
+
+                        ModelReservations modelReservations = new ModelReservations(
+                                dateAndTime.getTime(),
+                                et_reserv_name.getText().toString().trim(),
+                                et_reserv_telephone.getText().toString().trim(),
+                                persons,
+                                timeOfStay,
+                                tableReference
+                        );
+                        reservationsCollection.add(modelReservations)
+                                .addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful()) {
+                                        Snackbar.make(ll_btn_added_reserv, "Бронь добавлена", Snackbar.LENGTH_SHORT).show();
+                                        dismiss();
+                                    } else {
+                                        Exception e = task1.getException();
+                                        if (e != null) {
+                                            Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
+                                        }
+                                    }
+                                });
+                    }else {
                         Exception e = task.getException();
                         if (e != null) {
                             Log.e("FireStore", Objects.requireNonNull(e.getMessage()));
                         }
                     }
                 });
+
+    }
+
+    private boolean isTimeSlotAvailable(List<ModelReservations> reservations, Calendar newStart, Calendar newEnd) {
+        // Проверка каждого бронирования на пересечение с новым временным промежутком
+        for (ModelReservations existingReservation : reservations) {
+            Calendar existingStart = Calendar.getInstance();
+            existingStart.setTime(existingReservation.getDateTime());
+            Calendar existingEnd = (Calendar) existingStart.clone();
+            existingEnd.add(Calendar.MINUTE, existingReservation.getTimeOfStay());
+
+            // Проверка на пересечение временного интервала
+            if (newStart.before(existingEnd) && existingStart.before(newEnd)) {
+                return false; // Если найдено пересечение, возвращаем false
+            }
+        }
+        return true; // Если пересечений не найдено, возвращаем true
     }
 
     private boolean isEmptyViews(List<EditText> editTexts, TextView textView) {
@@ -143,10 +173,7 @@ public class ReservationDialog extends Dialog {
                 return true; // если хотя бы одно поле EditText пустое, возвращаем true
             }
         }
-        if (textView.getText().toString().isEmpty()) {
-            return true;
-        }
-        return false; // если все поля заполнены, возвращаем false
+        return textView.getText().toString().isEmpty();// если все поля заполнены, возвращаем false
     }
 
     private void setInitialDateTime() {
