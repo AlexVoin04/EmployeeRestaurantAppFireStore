@@ -29,7 +29,6 @@ import android.widget.TextView;
 import com.example.employeerestaurantappfirestore.R;
 import com.example.employeerestaurantappfirestore.adapters.ReservationAdapter;
 import com.example.employeerestaurantappfirestore.dialogs.ReservationDialog;
-import com.example.employeerestaurantappfirestore.managers.TableManager;
 import com.example.employeerestaurantappfirestore.model.ModelReservationsList;
 import com.example.employeerestaurantappfirestore.model.ModelTableList;
 import com.example.employeerestaurantappfirestore.utils.Animations;
@@ -202,7 +201,7 @@ public class TableFragment extends Fragment {
     }
 
     private void initListeners(){
-        TableManager tableManager = new TableManager();
+//        TableManager tableManager = new TableManager();
 //        ll_call_status.setOnClickListener(view -> tableManager.changCallStatus(table));
 //        rg_table_status.setOnCheckedChangeListener((group, checkedId) -> {
 //            String newIdTableStatus = "1";
@@ -226,25 +225,27 @@ public class TableFragment extends Fragment {
             dateAndTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
             setInitialDateTime();
             getReservations();
+            Animations.showMenuFragment(context);
         };
-        tv_selected_date.setOnClickListener(view -> {
-            new DatePickerDialog(context, d,
-                    dateAndTime.get(Calendar.YEAR),
-                    dateAndTime.get(Calendar.MONTH),
-                    dateAndTime.get(Calendar.DAY_OF_MONTH))
-                    .show();
-        });
+        tv_selected_date.setOnClickListener(view -> new DatePickerDialog(context, d,
+                dateAndTime.get(Calendar.YEAR),
+                dateAndTime.get(Calendar.MONTH),
+                dateAndTime.get(Calendar.DAY_OF_MONTH))
+                .show());
         ll_before_date.setOnClickListener(view1 -> {
             dateAndTime.add(Calendar.DAY_OF_MONTH, -1);
             setInitialDateTime();
             getReservations();
+            Animations.showMenuFragment(context);
         });
         ll_next_date.setOnClickListener(view1 -> {
             dateAndTime.add(Calendar.DAY_OF_MONTH, 1);
             setInitialDateTime();
             getReservations();
+            Animations.showMenuFragment(context);
         });
     }
+
 
     private void setStatusVisible(int status1, int status2){
         rl_reservations_not_found.setVisibility(status1);

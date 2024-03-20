@@ -74,7 +74,10 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
             if (currentFragment instanceof OrderFragment){
                 orderBack();
             }
-
+            if (currentFragment instanceof  TableFragment){
+                updateMenuUI(ll_tables, "Стол");
+                tableBack();
+            }
         }
     }
     private void getUser(){
@@ -245,10 +248,19 @@ public class MainActivity extends AppCompatActivity implements OnScrollListener,
         });
     }
 
+    private void tableBack(){
+        iv_back.setVisibility(View.VISIBLE);
+        iv_back.setOnClickListener(view -> {
+            updateMenuUI(ll_tables, "Столы");
+            loadDefaultFragment(new TablesFragment());
+        });
+    }
+
     @Override
     public void onTableItemClicked(String tableId) {
         updateMenuUI(ll_tables, "Стол");
         TableFragment tableFragment = TableFragment.newInstance(tableId);
         loadDefaultFragment(tableFragment);
+        tableBack();
     }
 }
